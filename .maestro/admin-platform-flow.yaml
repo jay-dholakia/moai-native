@@ -1,0 +1,579 @@
+appId: any
+tags:
+  - admin
+  - moderation
+  - users
+  - analytics
+  - platform
+---
+# Admin Platform E2E Test
+# Tests the complete admin platform including user management,
+# content moderation, analytics, and system health monitoring
+
+- launchApp
+- assertVisible: "Profile"
+
+# Navigate to Profile tab to access admin features
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- assertVisible: "Manage your account and preferences"
+
+# Test Admin Dashboard Access (requires admin role)
+- runFlow:
+    when:
+      visible: "Admin Dashboard"
+    commands:
+      - tapOn: "Admin Dashboard"
+      - assertVisible: "Admin Dashboard"
+
+      # Test Dashboard Overview
+      - assertVisible: "Platform Overview"
+      - assertVisible: "Quick Actions"
+
+      # Test platform statistics
+      - runFlow:
+          when:
+            visible: "Total Users"
+          commands:
+            - assertVisible: "Total Users"
+            - assertVisible: "Active Users"
+            - assertVisible: "Total MOAIs"
+            - assertVisible: "Workouts"
+            - assertVisible: "Messages"
+            - assertVisible: "Reports"
+
+      # Test quick action buttons
+      - runFlow:
+          when:
+            visible: "User Management"
+          commands:
+            - assertVisible: "User Management"
+            - assertVisible: "Moderation"
+            - assertVisible: "Analytics"
+            - assertVisible: "System Health"
+
+      # Test system health alert (if present)
+      - runFlow:
+          when:
+            visible: "System Health:"
+          commands:
+            - assertVisible: "System Health:"
+            - assertVisible: "Response time:"
+
+      # Test recent reports section
+      - runFlow:
+          when:
+            visible: "Recent Reports"
+          commands:
+            - assertVisible: "Recent Reports"
+            - assertVisible: "View All"
+
+      # Test system status summary
+      - runFlow:
+          when:
+            visible: "System Status"
+          commands:
+            - assertVisible: "System Status"
+            - assertVisible: "Uptime"
+            - assertVisible: "Response Time"
+            - assertVisible: "Storage Usage"
+            - assertVisible: "Active Connections"
+
+# Test User Management
+- runFlow:
+    when:
+      visible: "User Management"
+    commands:
+      - tapOn: "User Management"
+      - assertVisible: "User Management"
+
+      # Test search functionality
+      - assertVisible: "Search users by name or email..."
+      - inputText: "test"
+      
+      # Test filters
+      - tapOn: "options"  # Filter button
+      - assertVisible: "Filters"
+      - assertVisible: "Role"
+      - assertVisible: "Status"
+
+      # Test role filters
+      - assertVisible: "All Roles"
+      - assertVisible: "User"
+      - assertVisible: "Coach"
+      - assertVisible: "Admin"
+
+      # Test status filters
+      - assertVisible: "All Statuses"
+      - assertVisible: "Active"
+      - assertVisible: "Suspended"
+      - assertVisible: "Banned"
+      - assertVisible: "Pending"
+
+      # Select a role filter
+      - tapOn: "Coach"
+      - assertVisible: "Coach"  # Selected state
+
+      # Clear filters
+      - tapOn: "Clear All"
+
+      # Test user list display
+      - runFlow:
+          when:
+            visible: "Showing"
+          commands:
+            - assertVisible: "Showing"
+            - assertVisible: "users"
+
+      # Test user card information
+      - runFlow:
+          when:
+            visible: "ACTIVE"  # User status badge
+          commands:
+            - assertVisible: "ACTIVE"
+            - assertVisible: "activities"
+            - assertVisible: "MOAIs"
+            - assertVisible: "Joined"
+
+      # Test user actions
+      - runFlow:
+          when:
+            visible: "pause"  # Suspend button
+          commands:
+            - tapOn: "pause"
+            - runFlow:
+                when:
+                  visible: "Suspend User"
+                commands:
+                  - assertVisible: "Suspend User"
+                  - assertVisible: "Are you sure"
+                  - tapOn: "Cancel"
+
+      # Test load more functionality
+      - runFlow:
+          when:
+            visible: "Load More Users"
+          commands:
+            - tapOn: "Load More Users"
+
+# Test Content Moderation
+- tapOn: "arrow-back"  # Go back to dashboard
+- runFlow:
+    when:
+      visible: "Moderation"
+    commands:
+      - tapOn: "Moderation"
+      - assertVisible: "Content Moderation"
+
+      # Test status tabs
+      - assertVisible: "Pending"
+      - assertVisible: "Investigating"
+      - assertVisible: "Resolved"
+      - assertVisible: "Dismissed"
+
+      # Test pending reports
+      - tapOn: "Pending"
+      - assertVisible: "Pending"
+
+      # Test filters
+      - tapOn: "options"  # Filter button
+      - assertVisible: "Filters"
+      - assertVisible: "Priority"
+      - assertVisible: "Content Type"
+
+      # Test priority filters
+      - assertVisible: "All Priorities"
+      - assertVisible: "Urgent"
+      - assertVisible: "High"
+      - assertVisible: "Medium"
+      - assertVisible: "Low"
+
+      # Test content type filters
+      - assertVisible: "All Content"
+      - assertVisible: "Profile"
+      - assertVisible: "Message"
+      - assertVisible: "Post"
+      - assertVisible: "Workout"
+
+      # Select priority filter
+      - tapOn: "High"
+      - assertVisible: "High"  # Selected state
+
+      # Clear filters
+      - tapOn: "Clear All"
+
+      # Test report display
+      - runFlow:
+          when:
+            visible: "SPAM"  # Report type badge
+          commands:
+            - assertVisible: "SPAM"
+            - assertVisible: "HIGH"  # Priority badge
+            - assertVisible: "PENDING"  # Status badge
+            - assertVisible: "by"  # Reporter info
+            - assertVisible: "against"  # Reported user info
+
+      # Test report detail modal
+      - runFlow:
+          when:
+            visible: "chevron-forward"
+          commands:
+            - tapOn: "chevron-forward"
+            - assertVisible: "Report Details"
+
+            # Test report detail information
+            - assertVisible: "Reporter"
+            - assertVisible: "Reported User"
+            - assertVisible: "Content Type"
+            - assertVisible: "Reported"
+
+            # Test resolution actions
+            - runFlow:
+                when:
+                  visible: "Suspend User"
+                commands:
+                  - assertVisible: "Suspend User"
+                  - assertVisible: "Warn User"
+                  - assertVisible: "Remove Content"
+                  - assertVisible: "Dismiss Report"
+
+            # Test action confirmation
+            - tapOn: "Dismiss Report"
+            - runFlow:
+                when:
+                  visible: "Resolve Report"
+                commands:
+                  - assertVisible: "Resolve Report"
+                  - assertVisible: "Are you sure"
+                  - tapOn: "Cancel"
+
+            # Close modal
+            - tapOn: "close"
+
+      # Test load more functionality
+      - runFlow:
+          when:
+            visible: "Load More Reports"
+          commands:
+            - tapOn: "Load More Reports"
+
+# Test System Health Monitoring
+- tapOn: "arrow-back"  # Go back to dashboard
+- runFlow:
+    when:
+      visible: "System Health"
+    commands:
+      - tapOn: "System Health"
+      - assertVisible: "System Health"
+
+      # Test system health overview
+      - runFlow:
+          when:
+            visible: "HEALTHY"
+          commands:
+            - assertVisible: "HEALTHY"
+
+      - runFlow:
+          when:
+            visible: "WARNING"
+          commands:
+            - assertVisible: "WARNING"
+
+      - runFlow:
+          when:
+            visible: "CRITICAL"
+          commands:
+            - assertVisible: "CRITICAL"
+
+      # Test system metrics
+      - assertVisible: "Uptime"
+      - assertVisible: "Response Time"
+      - assertVisible: "Error Rate"
+      - assertVisible: "Database Status"
+      - assertVisible: "Storage Usage"
+      - assertVisible: "API Requests"
+      - assertVisible: "Active Connections"
+
+      # Test system alerts
+      - runFlow:
+          when:
+            visible: "System Alerts"
+          commands:
+            - assertVisible: "System Alerts"
+
+            # Test alert severity indicators
+            - runFlow:
+                when:
+                  visible: "CRITICAL"
+                commands:
+                  - assertVisible: "CRITICAL"
+                  - assertVisible: "alert-circle"
+
+            - runFlow:
+                when:
+                  visible: "WARNING"
+                commands:
+                  - assertVisible: "WARNING"
+                  - assertVisible: "alert-circle"
+
+            # Test alert resolution
+            - runFlow:
+                when:
+                  visible: "Resolve"
+                commands:
+                  - tapOn: "Resolve"
+                  - runFlow:
+                      when:
+                        visible: "Mark as Resolved"
+                      commands:
+                        - assertVisible: "Mark as Resolved"
+                        - tapOn: "Cancel"
+
+      # Test performance metrics graph
+      - runFlow:
+          when:
+            visible: "Performance Metrics"
+          commands:
+            - assertVisible: "Performance Metrics"
+            - assertVisible: "Last 24 Hours"
+
+      # Test database health
+      - runFlow:
+          when:
+            visible: "Database Health"
+          commands:
+            - assertVisible: "Database Health"
+            - assertVisible: "Connected"
+
+# Test Analytics Dashboard
+- tapOn: "arrow-back"  # Go back to dashboard
+- runFlow:
+    when:
+      visible: "Analytics"
+    commands:
+      - tapOn: "Analytics"
+      - assertVisible: "Platform Analytics"
+
+      # Test user growth charts
+      - runFlow:
+          when:
+            visible: "User Growth"
+          commands:
+            - assertVisible: "User Growth"
+            - assertVisible: "New Users"
+            - assertVisible: "Active Users"
+
+      # Test activity metrics
+      - runFlow:
+          when:
+            visible: "Activity Metrics"
+          commands:
+            - assertVisible: "Activity Metrics"
+            - assertVisible: "Workouts"
+            - assertVisible: "Messages"
+            - assertVisible: "Check-ins"
+
+      # Test time period filters
+      - runFlow:
+          when:
+            visible: "7 Days"
+          commands:
+            - assertVisible: "7 Days"
+            - assertVisible: "30 Days"
+            - assertVisible: "90 Days"
+            - tapOn: "30 Days"
+
+      # Test export functionality
+      - runFlow:
+          when:
+            visible: "Export"
+          commands:
+            - tapOn: "Export"
+            - assertVisible: "Export Analytics"
+            - assertVisible: "CSV"
+            - assertVisible: "JSON"
+
+# Test Admin Guard (non-admin users)
+- runFlow:
+    when:
+      visible: "Access Denied"
+    commands:
+      - assertVisible: "Access Denied"
+      - assertVisible: "Admin privileges required"
+      - assertVisible: "Contact Administrator"
+
+# Test Real-time Updates
+- runFlow:
+    when:
+      visible: "refresh"  # Refresh button
+    commands:
+      - tapOn: "refresh"
+      - waitForAnimationToEnd
+
+# Test Error Handling
+- runFlow:
+    when:
+      visible: "Failed to load"
+    commands:
+      - assertVisible: "Failed to load"
+      - assertVisible: "Try Again"
+      - tapOn: "Try Again"
+
+# Test Loading States
+- runFlow:
+    when:
+      visible: "Loading users..."
+    commands:
+      - assertVisible: "Loading users..."
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Loading reports..."
+    commands:
+      - assertVisible: "Loading reports..."
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Loading system health..."
+    commands:
+      - assertVisible: "Loading system health..."
+      - waitForAnimationToEnd
+
+# Test Empty States
+- runFlow:
+    when:
+      visible: "No Users Found"
+    commands:
+      - assertVisible: "No Users Found"
+      - assertVisible: "Try adjusting your search"
+
+- runFlow:
+    when:
+      visible: "No Reports Found"
+    commands:
+      - assertVisible: "No Reports Found"
+      - assertVisible: "All reports have been resolved"
+
+- runFlow:
+    when:
+      visible: "No Alerts"
+    commands:
+      - assertVisible: "No Alerts"
+      - assertVisible: "System is running smoothly"
+
+# Test Batch Operations
+- runFlow:
+    when:
+      visible: "Select All"
+    commands:
+      - tapOn: "Select All"
+      - assertVisible: "Batch Actions"
+      - assertVisible: "Suspend Selected"
+      - assertVisible: "Activate Selected"
+      - tapOn: "Deselect All"
+
+# Test Search Functionality
+- runFlow:
+    when:
+      visible: "Search users by name or email..."
+    commands:
+      - inputText: "john@example.com"
+      - assertVisible: "john@example.com"
+      - runFlow:
+          when:
+            visible: "clear"  # Clear search button
+          commands:
+            - tapOn: "clear"
+
+# Test Sorting Options
+- runFlow:
+    when:
+      visible: "sort"  # Sort button
+    commands:
+      - tapOn: "sort"
+      - assertVisible: "Sort By"
+      - assertVisible: "Created Date"
+      - assertVisible: "Last Seen"
+      - assertVisible: "Activity Count"
+      - assertVisible: "Flags Count"
+      - tapOn: "Last Seen"
+
+# Test Admin Action Logging
+- runFlow:
+    when:
+      visible: "Activity Log"
+    commands:
+      - assertVisible: "Activity Log"
+      - assertVisible: "Admin Actions"
+      - assertVisible: "User suspended by"
+      - assertVisible: "Report resolved by"
+
+# Test Permission Validation
+- runFlow:
+    when:
+      visible: "Insufficient Permissions"
+    commands:
+      - assertVisible: "Insufficient Permissions"
+      - assertVisible: "Super Admin access required"
+
+# Test Data Export
+- runFlow:
+    when:
+      visible: "Export Data"
+    commands:
+      - tapOn: "Export Data"
+      - assertVisible: "Select Data Type"
+      - assertVisible: "Users"
+      - assertVisible: "Reports"
+      - assertVisible: "Analytics"
+      - assertVisible: "System Logs"
+      - tapOn: "Users"
+      - assertVisible: "Export Format"
+      - assertVisible: "CSV"
+      - assertVisible: "JSON"
+      - tapOn: "CSV"
+      - assertVisible: "Preparing export..."
+
+# Test Pagination
+- runFlow:
+    when:
+      visible: "Page 1 of"
+    commands:
+      - assertVisible: "Page 1 of"
+      - runFlow:
+          when:
+            visible: "Next"
+          commands:
+            - tapOn: "Next"
+            - assertVisible: "Page 2 of"
+
+# Final verification - ensure admin platform is fully functional
+- assertVisible: "Admin Dashboard"
+
+# Test navigation back to main app
+- tapOn: "arrow-back"
+- assertVisible: "Profile"
+
+# Verify admin features integration with main app
+- runFlow:
+    when:
+      visible: "Admin Badge"  # Special badge for admin users
+    commands:
+      - assertVisible: "Admin Badge"
+      - assertVisible: "Administrator"
+
+# Test notification center for admin alerts
+- runFlow:
+    when:
+      visible: "notifications"
+    commands:
+      - tapOn: "notifications"
+      - runFlow:
+          when:
+            visible: "Admin Alert"
+          commands:
+            - assertVisible: "Admin Alert"
+            - assertVisible: "System notification"
+            - assertVisible: "High priority report"

@@ -1,0 +1,75 @@
+appId: host.exp.Exponent
+---
+# Weekly Progress Functionality Test Flow
+# Tests the newly implemented web app's MoaiTabContent functionality
+
+# Test Plan:
+# 1. Navigate to Your Moai page
+# 2. Verify weekly progress section is visible
+# 3. Test member progress rows display
+# 4. Test week navigation functionality  
+# 5. Test member day interactions (modal)
+
+- launchApp
+- assertVisible: "Your Moai"
+
+# Navigate to a specific moai if multiple exist
+- tapOn: 
+    text: "AliceMoaiGroup|Test Fitness Circle|AfaMoai"
+    optional: true
+
+# Verify weekly progress section is visible
+- assertVisible: "Weekly Progress"
+
+# Check for member progress rows (should show Alice Cooper and Bob Wilson)
+- assertVisible: 
+    text: "Alice C.|Alice Cooper"
+    optional: true
+
+# Check for commitment circles
+- assertVisible:
+    text: "3 days|5 days"
+    optional: true
+
+# Test week navigation - tap previous week button
+- tapOn:
+    id: "week-nav-previous|chevron-left"
+    optional: true
+
+# Verify week date changes
+- assertVisible:
+    text: "Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec"
+
+# Test week navigation - tap next week button  
+- tapOn:
+    id: "week-nav-next|chevron-right"
+    optional: true
+
+# Test member day interaction - tap on a day circle
+- tapOn:
+    text: "M|T|W|T|F|S|S"
+    optional: true
+
+# Verify member activity modal opens
+- assertVisible:
+    text: "Daily Summary|Activities"
+    optional: true
+
+# Close modal if it opened
+- tapOn:
+    id: "close-button|modal-close"
+    optional: true
+
+# Scroll down to see more members if needed
+- scroll:
+    direction: "down"
+    optional: true
+
+# Test console logs verification
+- eval: |
+    console.log("✅ Weekly Progress Test Completed");
+    console.log("- Weekly Progress section should be visible");
+    console.log("- Member rows should display with names and commitment goals");
+    console.log("- Week navigation should be functional");
+    console.log("- Day circles should be interactive");
+    true

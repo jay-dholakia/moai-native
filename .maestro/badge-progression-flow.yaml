@@ -1,0 +1,158 @@
+appId: any
+tags:
+  - badge-system
+  - gamification
+  - activities
+---
+# Badge Progression Flow E2E Test
+# Tests that users earn badges automatically when logging activities
+# and see celebration modals with progress tracking
+
+- launchApp
+- assertVisible: "Activities"
+
+# Navigate to Activities tab
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+- assertVisible: "Your Badges"
+
+# Check initial badge state (should show 0 activities)
+- tapOn: "View All"
+- assertVisible: "My Badges"
+- assertVisible: "Badge Progress"
+- assertVisible: "0 activities completed"
+
+# Go back to activities
+- tapOn:
+    id: "arrow-back"
+- assertVisible: "Your Activities"
+
+# Log first activity to start badge progression
+- tapOn: 
+    id: "add"  # Quick log button
+- assertVisible: "Quick Log Activity"
+
+# Select workout activity
+- tapOn: "💪"
+- assertVisible: "Workout"
+- assertVisible: "How long did you exercise?"
+
+# Set duration and log activity
+- clearText
+- inputText: "30"
+- tapOn: "Log Activity"
+
+# Wait for activity to be logged
+- assertVisible: "Your Activities"
+
+# Log more activities to reach first milestone (10 activities)
+# We'll log 9 more activities to reach the first badge threshold
+- repeatOnCondition:
+    while:
+      not:
+        visible: "🎉 Badge Earned!"
+    max: 15  # Safety limit
+    commands:
+      - tapOn: 
+          id: "add"
+      - tapOn: "🏃‍♂️"  # Running
+      - tapOn: "Log Activity"
+      - waitForAnimationToEnd
+
+# Should see badge celebration modal after reaching milestone
+- assertVisible: "🎉 Badge Earned!"
+- assertVisible: "First Steps"
+- assertVisible: "You logged your first 10 activities!"
+
+# Continue through celebration
+- tapOn: "Continue"
+
+# Should return to activities screen
+- assertVisible: "Your Activities"
+
+# Check badge dashboard now shows earned badge
+- tapOn: "View All"
+- assertVisible: "My Badges"
+- assertVisible: "1"  # Should show 1 badge earned
+- assertVisible: "Badges Earned"
+
+# Check that first badge is now showing as earned
+- tapOn: "Earned"
+- assertVisible: "First Steps"
+
+# Check milestone tab shows progress toward next badge
+- tapOn: "Milestones"
+- assertVisible: "Milestone Badges"
+
+# Go back to activities and log more activities for next badge
+- tapOn:
+    id: "arrow-back"
+- assertVisible: "Your Activities"
+
+# Log activities to reach second milestone (25 activities)
+# We need 15 more activities (currently at 10)
+- repeatOnCondition:
+    while:
+      not:
+        visible: "Steady Climber"
+    max: 20
+    commands:
+      - tapOn: 
+          id: "add"
+      - tapOn: "🚴‍♂️"  # Cycling
+      - clearText
+      - inputText: "45"
+      - tapOn: "Log Activity"
+      - waitForAnimationToEnd
+
+# Should earn second badge
+- assertVisible: "🎉 Badge Earned!"
+- assertVisible: "Steady Climber"
+- tapOn: "Continue"
+
+# Verify badge dashboard shows 2 earned badges
+- tapOn: "View All"
+- assertVisible: "2"
+- assertVisible: "Badges Earned"
+
+# Test badge detail modal
+- tapOn: "Earned"
+- tapOn: "First Steps"  # Tap on first earned badge
+- assertVisible: "First Steps"
+- assertVisible: "Badge Details"
+- assertVisible: "You earned this badge on"
+
+# Close detail modal
+- tapOn: "Close"
+- assertVisible: "My Badges"
+
+# Test that progress shows correctly for next milestone
+- tapOn: "Milestones"
+- assertVisible: "Next Milestone"
+- assertVisible: "Peak Performer"  # Should be working toward 50 activity badge
+
+# Return to main activities screen
+- tapOn:
+    id: "arrow-back"
+- assertVisible: "Your Activities"
+
+# Test custom activity logging also triggers badges
+- tapOn: 
+    id: "add"
+- tapOn: "Custom Activity"
+- assertVisible: "Custom Activity"
+
+- inputText: "basketball"
+- tapOn: "Emoji"
+- inputText: "🏀"
+- tapOn: "Duration (minutes) - Optional"
+- inputText: "60"
+- tapOn: "Log Activity"
+
+# Should return to activities with new activity logged
+- assertVisible: "Your Activities"
+
+# Final verification - check that all components work together
+- tapOn: "View Badge Progress"
+- assertVisible: "Badge Progress"
+- assertVisible: "Next:"  # Should show next milestone

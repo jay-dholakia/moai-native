@@ -1,0 +1,50 @@
+# Activities Screen Test - Pull to Refresh
+appId: com.moai.native
+env:
+  TEST_EMAIL: "test@moai.com"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Setup - ensure logged in and on Activities
+- launchApp
+- tapOn: "Profile"
+
+- runFlow:
+    when:
+      visible: "Sign In"
+    commands:
+      - tapOn: "Sign In"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: "Password"  
+      - inputText: "${TEST_PASSWORD}"
+      - tapOn: "Sign In"
+
+- tapOn: "Activities"
+- assertVisible: "Activities"
+
+# Test pull-to-refresh mechanism
+- scrollUp
+- assertVisible:
+    text: "Pull to refresh|Refreshing|Loading"
+    timeout: 3000
+
+# Wait for refresh to complete
+- assertVisible:
+    text: "Activities|Weekly Progress"
+    timeout: 10000
+
+# Test multiple refresh cycles
+- scrollUp
+- scrollUp
+- assertVisible: "Activities"
+
+# Verify content loads properly after refresh
+- assertVisible:
+    text: "Weekly Progress|Recent Activities"
+    timeout: 5000
+
+# Test refresh doesn't break scroll functionality
+- scrollDown
+- scrollUp
+- scrollDown
+
+- assertVisible: "Activities"

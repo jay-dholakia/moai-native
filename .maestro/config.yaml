@@ -1,0 +1,107 @@
+# Maestro Configuration for MOAI Native - Optimized Test Suite
+# Updated: Post-optimization with consolidated test structure
+
+appId: com.moai.native
+
+# Device configuration
+ios:
+  bundleId: com.moai.native
+  
+android:
+  appId: com.moai.native
+
+# Optimized test flow structure
+flows:
+  # Core test suites (run these for comprehensive coverage)
+  - suites/
+  
+  # Feature-specific tests (run for focused testing)
+  - flows/
+  
+# Recommended test execution order
+testSuites:
+  # Essential - run for every PR/deployment
+  essential:
+    - suites/smoke-test.yaml
+    
+  # Comprehensive - run for major releases  
+  comprehensive:
+    - suites/smoke-test.yaml
+    - suites/auth-comprehensive.yaml
+    - suites/features-integration.yaml
+    
+  # Feature-specific - run when developing specific features
+  focused:
+    - flows/activities/
+    - flows/moais/ 
+    - flows/profile/
+    - flows/chat/
+    - flows/navigation/
+
+# Global test configuration
+includeTags: []
+excludeTags: ["skip", "manual", "deprecated"]
+
+# Timeout settings
+timeout:
+  default: 30000
+  element: 10000
+  animation: 5000
+
+# Environment variables (shared across all tests)
+env:
+  # App Configuration
+  APP_NAME: "moai-native"
+  APP_ID: "com.moai.native"
+  
+  # Timing Configuration
+  DEFAULT_TIMEOUT: 30000
+  ANIMATION_TIMEOUT: 5000
+  NETWORK_TIMEOUT: 15000
+  
+  # Test Mode Settings
+  TEST_MODE: "e2e"
+  ENABLE_SCREENSHOTS: "true"
+  ENABLE_LOGGING: "true"
+  
+  # Primary Test User Accounts
+  REGULAR_USER_EMAIL: "e2e-test-user@moai.test"
+  REGULAR_USER_PASSWORD: "TestPassword123!"
+  REGULAR_USER_NAME: "E2E Test User"
+  
+  COACH_USER_EMAIL: "e2e-coach@moai.test"
+  COACH_USER_PASSWORD: "CoachPassword123!"
+  COACH_USER_NAME: "E2E Test Coach"
+  
+  MEMBER_USER_EMAIL: "e2e-member@moai.test"
+  MEMBER_USER_PASSWORD: "MemberPassword123!"
+  MEMBER_USER_NAME: "E2E Test Member"
+  
+  # Legacy support for existing tests
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+  
+  # Expected test data
+  EXPECTED_MOAIS: "Morning Runners,Strength Training Club,Yoga & Mindfulness"
+  EXPECTED_ACTIVITIES: "Morning Run,Upper Body Workout,Evening Walk"
+  
+  # UI patterns
+  MAIN_TABS: "Activities,Moais,Profile"
+  AUTH_SCREENS: "Welcome Back,Sign In"
+
+# Performance settings
+performance:
+  maxTestDuration: 600000  # 10 minutes max per test
+  retryCount: 2
+  screenshotOnFailure: true
+
+# Reporting
+reporting:
+  generateReport: true
+  includeScreenshots: true
+  outputFormat: ["json", "html"]
+
+# Test isolation
+isolation:
+  cleanupAfterTest: true
+  resetAppState: true

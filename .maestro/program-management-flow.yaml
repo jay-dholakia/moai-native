@@ -1,0 +1,411 @@
+appId: any
+tags:
+  - program-management
+  - coaching
+  - workout-programs
+  - client-assignment
+---
+# Program Management E2E Test
+# Tests the complete program management system including program creation,
+# assignment to clients, marketplace browsing, and tracking progress
+
+- launchApp
+- assertVisible: "Profile"
+
+# Navigate to Profile tab to access coach dashboard
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- assertVisible: "Manage your account and preferences"
+
+# Test Coach Dashboard Access (assuming user is a coach)
+- runFlow:
+    when:
+      visible: "Coach Dashboard"
+    commands:
+      - tapOn: "Coach Dashboard"
+      - assertVisible: "Welcome"
+      - assertVisible: "Coach Dashboard"
+      
+      # Test coach dashboard quick actions
+      - assertVisible: "Quick Actions"
+      - assertVisible: "Manage Clients"
+      
+      # Navigate to program management
+      - runFlow:
+          when:
+            visible: "Program Management"
+          commands:
+            - tapOn: "Program Management"
+            - assertVisible: "Program Management"
+
+# Test Program Management Dashboard
+- runFlow:
+    when:
+      visible: "Program Management"
+    commands:
+      - assertVisible: "Program Management"
+      
+      # Test stats overview
+      - assertVisible: "Total Programs"
+      - assertVisible: "Active Clients"
+      - assertVisible: "Avg Rating"
+      - assertVisible: "Completion Rate"
+      
+      # Test tabs
+      - assertVisible: "My Programs"
+      - assertVisible: "Assignments"
+      
+      # Test floating action button for creating programs
+      - assertVisible: "add"  # Plus icon
+
+# Test Program Creation Flow
+- runFlow:
+    when:
+      visible: "add"
+    commands:
+      - tapOn: "add"
+      - assertVisible: "Create Program"
+      
+      # Test program builder steps
+      - assertVisible: "Basic Info"
+      - assertVisible: "Program Details"
+      - assertVisible: "Pricing & Visibility"
+      - assertVisible: "Review"
+      
+      # Step 1: Basic Info
+      - assertVisible: "Program Name"
+      - inputText: "Test Strength Program"
+      
+      - assertVisible: "Description"
+      - inputText: "A comprehensive strength training program for beginners"
+      
+      # Test duration controls
+      - assertVisible: "Duration (Weeks)"
+      - tapOn: "add"  # Increase duration
+      - tapOn: "add"  # Increase duration again
+      
+      # Go to next step
+      - tapOn: "Next"
+      
+      # Step 2: Program Details
+      - assertVisible: "Difficulty Level"
+      - tapOn: "Beginner"
+      
+      - assertVisible: "Program Type"
+      - tapOn: "Strength"
+      
+      # Test adding goals
+      - assertVisible: "Program Goals"
+      - inputText: "Build muscle strength"
+      - tapOn: "Add"
+      - assertVisible: "Build muscle strength"
+      
+      # Test adding equipment
+      - assertVisible: "Equipment Needed"
+      - inputText: "Dumbbells"
+      - tapOn: "Add"
+      - assertVisible: "Dumbbells"
+      
+      # Go to pricing step
+      - tapOn: "Next"
+      
+      # Step 3: Pricing & Visibility
+      - assertVisible: "Monthly Price"
+      - inputText: "99"
+      
+      - assertVisible: "Public Program"
+      - assertVisible: "Featured Program"
+      
+      # Go to review step
+      - tapOn: "Next"
+      
+      # Step 4: Review
+      - assertVisible: "Program Summary"
+      - assertVisible: "Test Strength Program"
+      - assertVisible: "Build muscle strength"
+      - assertVisible: "Dumbbells"
+      
+      # Create the program
+      - tapOn: "Create Program"
+      
+      # Should show success and return to dashboard
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Program Assignment Flow
+- runFlow:
+    when:
+      visible: "Test Strength Program"
+    commands:
+      # Find the created program and test assignment
+      - assertVisible: "Test Strength Program"
+      - tapOn: "Assign"
+      
+      - assertVisible: "Assign Program"
+      - assertVisible: "Select Client"
+      
+      # Test client selection (if clients exist)
+      - runFlow:
+          when:
+            visible: "first_name"  # Client name pattern
+          commands:
+            - tapOn: "first_name"
+            - assertVisible: "checkmark-circle"
+      
+      # Test start date selection
+      - assertVisible: "Start Date"
+      - tapOn: "Tap to change"
+      
+      # Test assignment notes
+      - assertVisible: "Assignment Notes"
+      - inputText: "Custom program for client fitness goals"
+      
+      # Test assignment summary
+      - assertVisible: "Assignment Summary"
+      - assertVisible: "Client:"
+      - assertVisible: "Program:"
+      - assertVisible: "Duration:"
+      
+      # Complete assignment
+      - tapOn: "Assign Program"
+      
+      # Should show success
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Assignments Tab
+- tapOn: "Assignments"
+- assertVisible: "Assignments"
+
+# Test assignment management
+- runFlow:
+    when:
+      visible: "Pending Assignments"
+    commands:
+      - assertVisible: "Pending Assignments"
+      - assertVisible: "PENDING"
+      
+      # Test status change actions
+      - runFlow:
+          when:
+            visible: "START"
+          commands:
+            - tapOn: "START"
+            # Should update status
+
+- runFlow:
+    when:
+      visible: "Active Assignments"
+    commands:
+      - assertVisible: "Active Assignments"
+      - assertVisible: "ACTIVE"
+      
+      # Test assignment details
+      - assertVisible: "Week"
+      - assertVisible: "Complete"
+      - assertVisible: "Days Left"
+      
+      # Test pause action
+      - runFlow:
+          when:
+            visible: "PAUSE"
+          commands:
+            - tapOn: "PAUSE"
+
+# Test Program Marketplace (from marketplace perspective)
+- runFlow:
+    when:
+      visible: "storefront"  # Marketplace icon
+    commands:
+      - tapOn: "storefront"
+      - assertVisible: "Program Marketplace"
+      
+      # Test search functionality
+      - assertVisible: "Search programs..."
+      - inputText: "strength"
+      
+      # Test filter functionality
+      - tapOn: "filter"
+      - assertVisible: "Difficulty Level"
+      - assertVisible: "Program Type"
+      - assertVisible: "Price Range"
+      
+      # Test difficulty filter
+      - tapOn: "Beginner"
+      - tapOn: "Strength"
+      
+      # Test price range
+      - inputText: "0"  # Min price
+      - inputText: "100"  # Max price
+      
+      # Apply filters and check results
+      - runFlow:
+          when:
+            visible: "Test Strength Program"
+          commands:
+            - assertVisible: "Test Strength Program"
+            - assertVisible: "$99"
+            - assertVisible: "Beginner"
+            
+            # Test program detail view
+            - tapOn: "Test Strength Program"
+            - assertVisible: "Program Details"
+            - assertVisible: "About This Program"
+            - assertVisible: "Program Goals"
+            - assertVisible: "Equipment Needed"
+            - assertVisible: "Enroll Now"
+
+# Test Program Statistics and Analytics
+- tapOn: "arrow-back"  # Go back from marketplace
+- tapOn: "arrow-back"  # Go back to coach dashboard
+
+- runFlow:
+    when:
+      visible: "Coach Dashboard"
+    commands:
+      - assertVisible: "Overview"
+      
+      # Test program statistics
+      - assertVisible: "Active Clients"
+      - assertVisible: "Monthly Revenue"
+      - assertVisible: "Sessions This Week"
+      
+      # Test client progress tracking
+      - runFlow:
+          when:
+            visible: "View All"  # View all clients
+          commands:
+            - tapOn: "View All"
+            - assertVisible: "Client Management"
+            
+            # Should see assigned programs in client details
+            - runFlow:
+                when:
+                  visible: "Test Strength Program"
+                commands:
+                  - assertVisible: "Test Strength Program"
+                  - assertVisible: "Week"
+                  - assertVisible: "Complete"
+
+# Test Program Reviews and Ratings (if reviews exist)
+- runFlow:
+    when:
+      visible: "star"  # Rating stars
+    commands:
+      - assertVisible: "star"
+      - runFlow:
+          when:
+            visible: "5.0"  # Perfect rating
+          commands:
+            - assertVisible: "5.0"
+
+# Test Program Editing
+- runFlow:
+    when:
+      visible: "My Programs"
+    commands:
+      - tapOn: "My Programs"
+      - assertVisible: "Test Strength Program"
+      
+      # Test edit functionality
+      - tapOn: "Edit"
+      - assertVisible: "Edit Program"
+      - assertVisible: "Test Strength Program"  # Should pre-fill form
+      
+      # Make a change
+      - inputText: "Updated Test Strength Program"
+      
+      # Navigate through steps to save
+      - tapOn: "Next"
+      - tapOn: "Next"
+      - tapOn: "Next"
+      - tapOn: "Update Program"
+      
+      # Should show success
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Error Handling
+- runFlow:
+    when:
+      visible: "Failed to load"
+    commands:
+      - assertVisible: "Failed to load"
+      - assertVisible: "Try Again"
+      - tapOn: "Try Again"
+
+# Test Loading States
+- runFlow:
+    when:
+      visible: "Loading programs..."
+    commands:
+      - assertVisible: "Loading programs..."
+      - waitForAnimationToEnd
+
+# Test Empty States
+- runFlow:
+    when:
+      visible: "No programs yet"
+    commands:
+      - assertVisible: "No programs yet"
+      - assertVisible: "Create your first program"
+      - assertVisible: "Create Program"
+
+- runFlow:
+    when:
+      visible: "No assignments yet"
+    commands:
+      - assertVisible: "No assignments yet"
+      - assertVisible: "Assign programs to clients"
+
+# Test Client Progress Tracking
+- runFlow:
+    when:
+      visible: "Week 1 of 6"  # Program progress
+    commands:
+      - assertVisible: "Week 1 of 6"
+      - assertVisible: "% Complete"
+      
+      # Test workout completion
+      - runFlow:
+          when:
+            visible: "Mark Complete"
+          commands:
+            - tapOn: "Mark Complete"
+            - assertVisible: "Workout completed"
+
+# Test Program Analytics
+- runFlow:
+    when:
+      visible: "Analytics"
+    commands:
+      - tapOn: "Analytics"
+      - assertVisible: "Program Performance"
+      - assertVisible: "Completion Rate"
+      - assertVisible: "Average Rating"
+      - assertVisible: "Revenue"
+
+# Final verification - ensure program management is fully functional
+- assertVisible: "Program Management"
+
+# Test navigation back to main app
+- tapOn: "arrow-back"
+- assertVisible: "Coach Dashboard"
+- tapOn: "arrow-back"
+- assertVisible: "Profile"
+
+# Verify program system integration with main app
+- tapOn: "Activities"
+- assertVisible: "Your Activities"

@@ -1,0 +1,144 @@
+# Unified Authentication Helper
+# Standardizes all authentication patterns used across tests
+# Replaces: auth-helpers.yaml, quick-login.yaml, and scattered auth patterns
+
+appId: com.moai.native
+
+# Default test user credentials - can be overridden by calling tests
+env:
+  DEFAULT_EMAIL: "e2e-test-user@moai.test" 
+  DEFAULT_PASSWORD: "TestPassword123!"
+
+---
+# ===============================
+# REUSABLE AUTHENTICATION FLOWS
+# ===============================
+
+# Flow 1: Idempotent Logout
+# Ensures clean authentication state regardless of current state
+- runFlow:
+    when:
+      visible: "Activities|Moais|Profile"
+    commands:
+      - tapOn: "Profile"
+      - waitForAnimationToEnd
+      - scroll
+      - tapOn:
+          text: "Sign Out|Logout"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "Sign Out|Logout"
+          commands:
+            - tapOn:
+                text: "Sign Out|Logout"
+            - waitForAnimationToEnd
+      - assertVisible: "Welcome Back|Sign In"
+
+---
+# Flow 2: Standard Login
+# Parameters: email, password (uses defaults if not provided)
+- runFlow:
+    when:
+      visible: "Welcome Back|Sign In"
+    commands:
+      - tapOn: 
+          text: "Enter your email|Email"
+      - clearText
+      - inputText: "${email:-${DEFAULT_EMAIL}}"
+      - tapOn: 
+          text: "Enter your password|Password"
+      - clearText
+      - inputText: "${password:-${DEFAULT_PASSWORD}}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      - waitForAnimationToEnd
+      - assertVisible: 
+          text: "Activities|Moais|Profile"
+
+---
+# Flow 3: Quick Login with Default Credentials
+# No parameters needed - uses default test user
+- launchApp
+- waitForAnimationToEnd
+- runFlow: auth-helper.yaml#idempotent-logout
+- runFlow: 
+    parameters:
+      email: "${DEFAULT_EMAIL}"
+      password: "${DEFAULT_PASSWORD}"
+    flow: auth-helper.yaml#standard-login
+
+---
+# Flow 4: Login with Custom Credentials
+# Parameters: email (required), password (required)
+- launchApp
+- waitForAnimationToEnd
+- runFlow: auth-helper.yaml#idempotent-logout
+- runFlow:
+    parameters:
+      email: "${email}"
+      password: "${password}"
+    flow: auth-helper.yaml#standard-login
+
+---
+# Flow 5: Enhanced Logout
+# Comprehensive logout with verification
+- runFlow:
+    when:
+      visible: "Activities|Moais|Profile"
+    commands:
+      - tapOn: "Profile"
+      - waitForAnimationToEnd
+      - scroll
+      - tapOn:
+          text: "Sign Out|Logout"
+      - waitForAnimationToEnd
+      - assertVisible: 
+          text: "Welcome Back|Sign In"
+      - takeScreenshot: "logout-successful"
+
+---
+# Flow 6: Tab Navigation Helper
+# Parameters: tabName (required)
+- tapOn: "${tabName}"
+- waitForAnimationToEnd
+- assertVisible: "${tabName}"
+
+---
+# Flow 7: Wait for App Initialization
+# Standardized wait pattern for app loading
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Loading|Initializing"
+    commands:
+      - waitForAnimationToEnd
+
+---
+# Flow 8: Authentication Error Handler
+# Handles various authentication error states
+- runFlow:
+    when:
+      visible: "Invalid|Error|Wrong|Authentication failed"
+    commands:
+      - takeScreenshot: "auth-error-state"
+      - tapOn:
+          text: "OK|Close|Try Again"
+          optional: true
+
+---
+# Flow 9: User Role Verification
+# Parameters: expectedUserName, expectedEmail
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "${expectedUserName}|${expectedEmail}"
+    timeout: 5000
+
+---
+# Flow 10: Complete Authentication Reset
+# Full reset including app restart
+- stopApp
+- launchApp 
+- waitForAnimationToEnd
+- runFlow: auth-helper.yaml#idempotent-logout

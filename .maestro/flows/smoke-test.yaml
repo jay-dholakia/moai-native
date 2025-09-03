@@ -1,0 +1,81 @@
+# Smoke Test - Basic app functionality
+appId: com.moai.native
+---
+# Test 1: App launches successfully
+- launchApp
+
+# Test 2: Handle both authenticated and unauthenticated states
+# If user is already authenticated, sign them out first for consistent testing
+- runFlow:
+    when:
+      visible: "Home|Moais|Activities"
+    commands:
+      # Navigate to profile tab (bottom navigation)
+      - tapOn: 
+          point: 83%, 95%
+      - scroll
+      - tapOn: "Sign Out"
+      - tapOn: "Sign Out"
+      - assertVisible: "Welcome Back"
+          
+# Now we should see the authentication screen
+- assertVisible:
+    text: "Welcome Back"
+
+# Test 3: Check if we can navigate to sign up
+- runFlow:
+    when:
+      visible: "Sign Up"
+    commands:
+      - tapOn: "Sign Up"
+      - assertVisible: "Join Moai"
+      - tapOn: "Sign In"
+
+# Test 4: Basic sign in flow to access main app
+- runFlow:
+    when:
+      visible: "Sign In"
+    commands:
+      - tapOn:
+          text: "Enter your email"
+      - inputText: "test@moai.com"
+      - tapOn:
+          text: "Enter your password"
+      - inputText: "TestPassword123!"
+      - tapOn: "Sign In"
+
+# Test 5: Verify we can see main navigation
+- assertVisible: "Moais" 
+- assertVisible: "Profile"
+
+# Test 6: Can navigate between tabs
+- tapOn: "Activities"
+- assertVisible:
+    text: "Activities|Weekly Progress|Activity Log"
+
+- tapOn: "Moais"
+- assertVisible:
+    text: "Moais|Featured|Search|Browse"
+
+- tapOn: "Profile" 
+- assertVisible:
+    text: "Profile|Settings|Sign out"
+
+# Test 7: App doesn't crash on basic interactions
+- tapOn: "Activities"
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+- tapOn: "Moais"
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+
+# Test completed successfully
+- assertVisible: "Moais"

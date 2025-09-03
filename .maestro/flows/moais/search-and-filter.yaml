@@ -1,0 +1,95 @@
+# Moais Screen Test - Search and Filter
+appId: com.moai.native
+env:
+  TEST_EMAIL: "test@moai.com"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Setup - ensure logged in and on Moais screen
+- launchApp
+- tapOn: "Profile"
+
+- runFlow:
+    when:
+      visible: "Sign In"
+    commands:
+      - tapOn: "Sign In"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: "Password"
+      - inputText: "${TEST_PASSWORD}"
+      - tapOn: "Sign In"
+
+- tapOn: "Moais"
+- assertVisible: "Moais"
+
+# Test search functionality
+- tapOn: 
+    text: "Search|Find"
+    
+# Test different search terms
+- inputText: "fitness"
+- assertVisible:
+    text: "fitness|Results|Searching"
+    timeout: 5000
+
+- clearText
+- inputText: "yoga"
+- assertVisible:
+    text: "yoga|Results|Searching"
+    timeout: 5000
+
+- clearText  
+- inputText: "running"
+- assertVisible:
+    text: "running|Results|Searching"
+    timeout: 5000
+
+# Test empty search
+- clearText
+- assertVisible:
+    text: "All Moais|Browse"
+    timeout: 3000
+
+# Test search with no results
+- inputText: "xyztestnonesuch"
+- assertVisible:
+    text: "No results|No Moais found|Try different"
+    timeout: 5000
+
+# Clear search
+- clearText
+
+# Test filter functionality (if available)
+- runFlow:
+    when:
+      visible: "Filter"
+    commands:
+      - tapOn: "Filter"
+      - assertVisible: "Category"
+      
+      # Test category filter
+      - tapOn: "Fitness"
+      - tapOn: "Apply"
+      - assertVisible:
+          text: "Fitness|Filtered"
+          timeout: 5000
+      
+      # Reset filters
+      - tapOn: "Filter"
+      - tapOn: "Clear"
+      - tapOn: "Apply"
+
+# Test combined search and filter
+- runFlow:
+    when:
+      visible: "Filter"
+    commands:
+      - inputText: "group"
+      - tapOn: "Filter"
+      - tapOn: "Health"
+      - tapOn: "Apply"
+      - assertVisible:
+          text: "group|Health|Results"
+          timeout: 5000
+
+# Verify functionality remains stable
+- assertVisible: "Moais"

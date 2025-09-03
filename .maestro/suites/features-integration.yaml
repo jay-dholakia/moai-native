@@ -1,0 +1,339 @@
+# Features Integration Test Suite
+# Consolidates: e2e-full-flow-test, e2e-comprehensive-test, onboarding-checkpoint-test, signup-onboarding-invite-test
+appId: com.moai.native
+env:
+  # Test User Credentials
+  TEST_USER_EMAIL: "e2e-test-user@moai.test"
+  TEST_USER_PASSWORD: "TestPassword123!"
+  COACH_USER_EMAIL: "e2e-coach@moai.test"
+  COACH_USER_PASSWORD: "CoachPassword123!"
+---
+# ===============================
+# SETUP PHASE
+# ===============================
+
+# Ensure comprehensive test environment is ready
+- runFlow: helpers/setup-test-environment.yaml
+
+# Test 1: Initial Authentication
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+- takeScreenshot: "features-01-app-launch"
+
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "${TEST_USER_EMAIL}"
+- tapOn: 
+    text: "Enter your password|Password"
+- inputText: "${TEST_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+- takeScreenshot: "features-02-successful-login"
+
+# ===============================
+# ACTIVITIES FEATURE INTEGRATION
+# ===============================
+
+# Test 2: Activities Feature Comprehensive Test
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- assertVisible: "Activities"
+- takeScreenshot: "features-03-activities-tab"
+
+# Test Quick Log functionality
+- assertVisible:
+    text: "Quick Log|🏋️‍♀️|🏃‍♂️|🧘‍♀️"
+    timeout: 5000
+
+# Test activity type interactions
+- tapOn:
+    text: "Strength Training|🏋️‍♀️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Log|Start|Record|Duration"
+    commands:
+      - takeScreenshot: "features-04-activity-logging"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test Recent Activities section
+- scroll
+- assertVisible:
+    text: "Recent Activities"
+    timeout: 5000
+- runFlow:
+    when:
+      visible:
+        text: "Morning Run|Upper Body|No activities"
+    commands:
+      - takeScreenshot: "features-05-recent-activities"
+
+# Test Weekly Stats
+- scroll
+- assertVisible:
+    text: "This Week's Stats|Workouts|Minutes|Calories"
+    timeout: 5000
+- takeScreenshot: "features-06-weekly-stats"
+
+# Test pull-to-refresh functionality
+- scrollUp
+- swipe:
+    start: 50%, 30%
+    end: 50%, 70%
+- waitForAnimationToEnd
+- takeScreenshot: "features-07-pull-refresh"
+
+# ===============================
+# MOAIS FEATURE INTEGRATION
+# ===============================
+
+# Test 3: Moais Feature Comprehensive Test
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- assertVisible: "Your Moais|Moais"
+- takeScreenshot: "features-08-moais-tab"
+
+# Test user's existing moais
+- assertVisible:
+    text: "Your Communities|Your Moais"
+    timeout: 5000
+- runFlow:
+    when:
+      visible:
+        text: "Morning Runners|Strength Training|No moais"
+    commands:
+      - assertVisible:
+          text: "Morning Runners|Strength Training"
+          timeout: 5000
+      - takeScreenshot: "features-09-user-moais"
+
+# Test search functionality
+- runFlow:
+    when:
+      visible:
+        text: "Search|🔍"
+    commands:
+      - tapOn:
+          text: "Search|🔍"
+      - waitForAnimationToEnd
+      - inputText: "Yoga"
+      - runFlow:
+          when:
+            visible: "Yoga & Mindfulness"
+          commands:
+            - assertVisible: "Yoga & Mindfulness"
+            - takeScreenshot: "features-10-moai-search"
+      - clearText
+      - hideKeyboard
+
+# Test featured moais section
+- scroll
+- assertVisible:
+    text: "Featured Moais|Featured"
+    timeout: 5000
+- runFlow:
+    when:
+      visible:
+        text: "Yoga & Mindfulness"
+    commands:
+      - assertVisible:
+          text: "Yoga & Mindfulness"
+          timeout: 5000
+      - takeScreenshot: "features-11-featured-moais"
+
+# Test join moai functionality
+- runFlow:
+    when:
+      visible: "Join|+ Join"
+    commands:
+      - tapOn: "Join|+ Join"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible:
+              text: "Joined|Welcome|Success|Already a member"
+          commands:
+            - takeScreenshot: "features-12-join-moai"
+            - tapOn:
+                text: "OK|Close|Back"
+                optional: true
+
+# ===============================
+# PROFILE FEATURE INTEGRATION
+# ===============================
+
+# Test 4: Profile Feature Comprehensive Test
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: "Profile"
+- assertVisible:
+    text: "E2E Test User|${TEST_USER_EMAIL}"
+    timeout: 5000
+- takeScreenshot: "features-13-profile-info"
+
+# Test profile statistics sections
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Activities|Moais|Friends|Stats"
+    commands:
+      - takeScreenshot: "features-14-profile-stats"
+
+# Test settings access
+- runFlow:
+    when:
+      visible:
+        text: "Settings|Preferences|⚙️"
+    commands:
+      - tapOn:
+          text: "Settings|Preferences|⚙️"
+      - waitForAnimationToEnd
+      - takeScreenshot: "features-15-settings"
+      - tapOn:
+          text: "Back|Close|←"
+      - waitForAnimationToEnd
+
+# ===============================
+# CROSS-FEATURE INTEGRATION
+# ===============================
+
+# Test 5: Cross-Feature Navigation Flow
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "View All|See More"
+    commands:
+      - tapOn:
+          text: "View All|See More"
+      - waitForAnimationToEnd
+      - tapOn: "Back|←"
+      - waitForAnimationToEnd
+
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "Morning Runners|Strength Training"
+    commands:
+      - tapOn: "Morning Runners|Strength Training"
+      - waitForAnimationToEnd
+      - takeScreenshot: "features-16-moai-details"
+      - tapOn: "Back|←"
+      - waitForAnimationToEnd
+
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- takeScreenshot: "features-17-navigation-test"
+
+# ===============================
+# MULTI-USER INTEGRATION
+# ===============================
+
+# Test 6: User Role Integration Test
+- scroll
+- tapOn:
+    text: "Sign Out|Logout"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+
+# Login as coach user
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "${COACH_USER_EMAIL}"
+- tapOn: 
+    text: "Enter your password|Password"
+- inputText: "${COACH_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+
+# Test coach-specific features
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "E2E Test Coach|${COACH_USER_EMAIL}"
+    timeout: 5000
+- takeScreenshot: "features-18-coach-profile"
+
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Yoga & Mindfulness|Coach|Manage"
+    commands:
+      - takeScreenshot: "features-19-coach-moais"
+
+# Test coach activities view
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Vinyasa Flow|Coach Activities"
+    commands:
+      - takeScreenshot: "features-20-coach-activities"
+
+# ===============================
+# DATA INTEGRITY VERIFICATION
+# ===============================
+
+# Test 7: Data Consistency Check
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "E2E Test Coach"
+    timeout: 5000
+
+# Verify coach's activities are maintained
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- scroll
+- assertVisible:
+    text: "Recent Activities"
+    timeout: 5000
+
+# ===============================
+# SESSION AND PERSISTENCE TESTS
+# ===============================
+
+# Test 8: App Background/Foreground Integration
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+- takeScreenshot: "features-21-session-persistence"
+
+# Verify user state is maintained
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "E2E Test Coach"
+    timeout: 5000
+
+# ===============================
+# FINAL CLEANUP
+# ===============================
+
+# Test 9: Final Logout and State Reset
+- scroll
+- tapOn:
+    text: "Sign Out|Logout"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+- takeScreenshot: "features-22-final-logout"
+
+# Features integration test completed
+- takeScreenshot: "features-23-test-completed"

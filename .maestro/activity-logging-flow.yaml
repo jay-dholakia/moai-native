@@ -1,0 +1,85 @@
+appId: host.exp.exponent
+---
+# E2E Test: Activity Logging Flow
+# Tests the complete activity logging functionality
+
+- launchApp
+
+# Test 1: Navigate to Activities Tab
+- tapOn: 
+    text: "Activities"
+    
+- assertVisible: "Your Activities"
+- assertVisible: "Track your fitness journey"
+
+# Test 2: Quick Log Activity - Check if Quick Log Button exists
+- tapOn:
+    id: "quick-log-button"
+    optional: true
+
+# If quick log button exists, test the quick logging flow
+- runFlow:
+    when:
+      visible: "Quick Log Activity"
+    commands:
+      # Test quick activity selection
+      - assertVisible: "Quick Log Activity"
+      - tapOn:
+          text: "Workout"
+      
+      # Test duration input
+      - assertVisible: "How long did you exercise?"
+      - inputText: "45"
+      
+      # Complete the log
+      - tapOn: "Log Activity"
+      
+      # Verify success
+      - assertVisible: 
+          text: "workout"
+
+# Test 3: Check Activity Stats Display
+- assertVisible: "Day Streak"
+- assertVisible: "Total Activities"
+- assertVisible: "This Week"
+
+# Test 4: Recent Activities Section
+- assertVisible: "Recent Activities"
+
+# Test 5: Test Custom Activity (if available)
+- tapOn:
+    id: "quick-log-button"
+    optional: true
+
+- runFlow:
+    when:
+      visible: "Custom Activity"
+    commands:
+      - tapOn: "Custom Activity"
+      - inputText: "Basketball"
+      - tapOn:
+          text: "Emoji"
+      - inputText: "🏀"
+      - inputText: "30"
+      - tapOn: "Log Activity"
+
+# Test 6: Refresh Activities
+- swipe:
+    direction: DOWN
+    duration: 1000
+
+# Test 7: Navigate back to ensure no crashes
+- tapOn: "Home"
+- tapOn: "Activities"
+
+# Test 8: Check for Loading States
+- assertVisible: 
+    text: "Loading"
+    optional: true
+
+# Test 9: Verify No Error States
+- assertNotVisible: "Error"
+- assertNotVisible: "Failed"
+
+# Final verification
+- assertVisible: "Your Activities"

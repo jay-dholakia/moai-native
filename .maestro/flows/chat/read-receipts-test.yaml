@@ -1,0 +1,72 @@
+# Read Receipts E2E Test
+appId: com.moai.native
+---
+# Test read receipts functionality
+
+# Test 1: Navigate to chat and send a message
+- launchApp
+- assertVisible: "Home"
+
+# Navigate to chat tab
+- tapOn: "Chat"
+- assertVisible: "Chat"
+
+# Find and open a moai chat channel
+- tapOn: 
+    text: ".*Moai.*" # Find any moai in the list
+    
+# Wait for chat to load
+- assertVisible: "Send a message"
+
+# Test 2: Send a message and verify read receipt
+- tapOn: "Send a message"
+- inputText: "Test message for read receipts ✓"
+- tapOn: "Send"
+
+# Wait for message to be sent
+- wait: 1000
+
+# Verify message appears with read receipt indicator
+- assertVisible: "Test message for read receipts ✓"
+
+# Look for single check mark (sent but not read)
+- assertVisible: 
+    id: "single-check" # This would be the check icon
+    
+# Test 3: Simulate message being read by scrolling/viewing
+# In a real scenario with multiple users, read receipts would appear
+# For now, verify that read receipt UI elements exist
+
+# Test 4: Send another message and check read status
+- tapOn: "Send a message"
+- inputText: "Second test message"
+- tapOn: "Send"
+
+# Wait for message to appear
+- wait: 1000
+
+# Test 5: Test read receipt modal (if available)
+# Long press on a sent message to potentially show read receipt details
+- longPressOn: "Test message for read receipts ✓"
+
+# Wait for potential modal or menu to appear
+- wait: 500
+
+# Test 6: Navigate back and check unread indicators
+# Go back to chat list to see if unread counts work
+- tapOn: 
+    id: "back-button" # Back arrow
+    
+# Should return to chat list
+- assertVisible: "Chat"
+
+# Test 7: Return to same chat and verify read state persistence
+- tapOn: 
+    text: ".*Moai.*" # Same moai as before
+    
+# Messages should still be there with read receipts
+- assertVisible: "Test message for read receipts ✓"
+- assertVisible: "Second test message"
+
+# Test completed successfully
+- assertVisible: "Send a message" # Verify we're in chat interface

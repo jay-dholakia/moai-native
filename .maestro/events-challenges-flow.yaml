@@ -1,0 +1,638 @@
+appId: any
+tags:
+  - events
+  - challenges
+  - competitions
+  - community
+---
+# Events & Challenges E2E Test
+# Tests the complete events and challenges system including event creation,
+# challenge management, leaderboards, and community competitions
+
+- launchApp
+- assertVisible: "Profile"
+
+# Navigate to Profile tab to access events & challenges
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- assertVisible: "Manage your account and preferences"
+
+# Test Events & Challenges Access (assuming user has access)
+- runFlow:
+    when:
+      visible: "Events & Challenges"
+    commands:
+      - tapOn: "Events & Challenges"
+      - assertVisible: "Events & Challenges"
+
+# Test Event Discovery
+- runFlow:
+    when:
+      visible: "Discover Events"
+    commands:
+      - tapOn: "Discover Events"
+      - assertVisible: "Discover Events"
+      
+      # Test search functionality
+      - assertVisible: "Search events..."
+      - inputText: "yoga"
+      
+      # Test filter functionality
+      - tapOn: "filter"
+      - assertVisible: "Filters"
+      - assertVisible: "Category"
+      - assertVisible: "Event Type"
+      - assertVisible: "Location"
+      
+      # Test category filters
+      - tapOn: "Fitness"
+      - tapOn: "Wellness"
+      - tapOn: "Clear All"
+      
+      # Test event type filters
+      - tapOn: "Workout Session"
+      - tapOn: "Educational"
+      
+      # Test location filters
+      - tapOn: "Virtual"
+      - tapOn: "In Person"
+
+# Test Event Creation Flow
+- runFlow:
+    when:
+      visible: "Create Event"
+    commands:
+      - tapOn: "Create Event"
+      - assertVisible: "Create Event"
+      
+      # Test event builder steps
+      - assertVisible: "Event Info"
+      - assertVisible: "Schedule"
+      - assertVisible: "Location"
+      - assertVisible: "Settings"
+      
+      # Step 1: Event Info
+      - assertVisible: "Event Title"
+      - inputText: "Morning Yoga Session"
+      
+      - assertVisible: "Description"
+      - inputText: "A peaceful morning yoga session for all levels"
+      
+      # Test event type selection
+      - assertVisible: "Event Type"
+      - tapOn: "Workout Session"
+      
+      # Test category selection
+      - assertVisible: "Category"
+      - tapOn: "Wellness"
+      
+      # Test difficulty level
+      - assertVisible: "Difficulty Level"
+      - tapOn: "Beginner"
+      
+      # Go to next step
+      - tapOn: "Next"
+      
+      # Step 2: Schedule
+      - assertVisible: "Start Date & Time"
+      - tapOn: "Tap to change"
+      
+      - assertVisible: "Duration (Minutes)"
+      - tapOn: "add"  # Increase duration
+      - tapOn: "add"  # Increase duration again
+      
+      # Test end date (optional)
+      - assertVisible: "End Date (Optional)"
+      - tapOn: "Tap to set"
+      
+      # Go to location step
+      - tapOn: "Next"
+      
+      # Step 3: Location
+      - assertVisible: "Location Type"
+      - tapOn: "Virtual Event"
+      - assertVisible: "checkmark-circle"
+      
+      - assertVisible: "Meeting Link"
+      - inputText: "https://zoom.us/j/123456789"
+      
+      - assertVisible: "Max Participants (Optional)"
+      - inputText: "20"
+      
+      # Go to settings step
+      - tapOn: "Next"
+      
+      # Step 4: Settings
+      - assertVisible: "Entry Fee"
+      - inputText: "0"
+      
+      # Test tags
+      - assertVisible: "Tags"
+      - inputText: "morning"
+      - tapOn: "Add"
+      - assertVisible: "morning"
+      
+      - inputText: "yoga"
+      - tapOn: "Add"
+      - assertVisible: "yoga"
+      
+      # Test requirements
+      - assertVisible: "Requirements"
+      - inputText: "Yoga mat"
+      - tapOn: "Add"
+      - assertVisible: "Yoga mat"
+      
+      # Test visibility settings
+      - assertVisible: "Public Event"
+      - assertVisible: "Featured Event"
+      
+      # Create the event
+      - tapOn: "Create Event"
+      
+      # Should show success
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Event Details View
+- runFlow:
+    when:
+      visible: "Morning Yoga Session"
+    commands:
+      - tapOn: "Morning Yoga Session"
+      - assertVisible: "Morning Yoga Session"
+      
+      # Test event details tabs
+      - assertVisible: "Details"
+      - assertVisible: "Participants"
+      
+      # Test event details
+      - assertVisible: "Event Organizer"
+      - assertVisible: "Event Details"
+      - assertVisible: "Virtual Event"
+      - assertVisible: "20 Participants"
+      - assertVisible: "About This Event"
+      - assertVisible: "Requirements"
+      - assertVisible: "Tags"
+      - assertVisible: "morning"
+      - assertVisible: "yoga"
+      
+      # Test participants tab
+      - tapOn: "Participants"
+      - assertVisible: "Participants"
+      
+      # Test registration (if not already registered)
+      - runFlow:
+          when:
+            visible: "Register for Event"
+          commands:
+            - tapOn: "Register for Event"
+            - runFlow:
+                when:
+                  visible: "Success"
+                commands:
+                  - assertVisible: "Success"
+                  - tapOn: "OK"
+
+# Test Challenge Discovery
+- tapOn: "arrow-back"  # Go back from event details
+- runFlow:
+    when:
+      visible: "Discover Challenges"
+    commands:
+      - tapOn: "Discover Challenges"
+      - assertVisible: "Discover Challenges"
+      
+      # Test challenge search
+      - assertVisible: "Search challenges..."
+      - inputText: "30 day"
+      
+      # Test challenge filters
+      - tapOn: "filter"
+      - assertVisible: "Category"
+      - assertVisible: "Challenge Type"
+      - assertVisible: "Status"
+      
+      # Test category filters
+      - tapOn: "Workouts"
+      - tapOn: "Steps"
+      
+      # Test challenge type filters
+      - tapOn: "Individual"
+      - tapOn: "Team"
+      
+      # Test status filters
+      - tapOn: "Active"
+      - tapOn: "Upcoming"
+
+# Test Challenge Creation Flow
+- runFlow:
+    when:
+      visible: "Create Challenge"
+    commands:
+      - tapOn: "Create Challenge"
+      - assertVisible: "Create Challenge"
+      
+      # Test challenge builder steps
+      - assertVisible: "Challenge Info"
+      - assertVisible: "Goals & Rules"
+      - assertVisible: "Schedule"
+      - assertVisible: "Rewards"
+      
+      # Step 1: Challenge Info
+      - assertVisible: "Challenge Title"
+      - inputText: "30-Day Workout Challenge"
+      
+      - assertVisible: "Description"
+      - inputText: "Complete 30 workouts in 30 days to build a strong fitness habit"
+      
+      # Test challenge type selection
+      - assertVisible: "Challenge Type"
+      - tapOn: "Individual"
+      - assertVisible: "checkmark-circle"
+      
+      # Test category selection
+      - assertVisible: "Category"
+      - tapOn: "Workouts"
+      
+      # Go to goals step
+      - tapOn: "Next"
+      
+      # Step 2: Goals & Rules
+      - assertVisible: "Goal Type"
+      - tapOn: "Reach Target"
+      - assertVisible: "checkmark-circle"
+      
+      - assertVisible: "Goal Target"
+      - inputText: "30"
+      - inputText: "workouts"
+      
+      - assertVisible: "Max Participants (Optional)"
+      - inputText: "100"
+      
+      # Test adding rules
+      - assertVisible: "Challenge Rules"
+      - inputText: "Complete at least 1 workout per day"
+      - tapOn: "Add"
+      - assertVisible: "Complete at least 1 workout per day"
+      
+      - inputText: "Rest days are allowed but not recommended"
+      - tapOn: "Add"
+      - assertVisible: "Rest days are allowed but not recommended"
+      
+      # Go to schedule step
+      - tapOn: "Next"
+      
+      # Step 3: Schedule
+      - assertVisible: "Start Date"
+      - tapOn: "Tap to change"
+      
+      - assertVisible: "End Date"
+      - tapOn: "Tap to change"
+      
+      - assertVisible: "Duration"
+      - assertVisible: "days"
+      
+      # Go to rewards step
+      - tapOn: "Next"
+      
+      # Step 4: Rewards
+      - assertVisible: "Entry Fee"
+      - inputText: "10"
+      
+      - assertVisible: "Prize Pool"
+      - inputText: "500"
+      
+      # Test prize configuration
+      - assertVisible: "1st Place"
+      - inputText: "$200 gift card"
+      
+      - assertVisible: "2nd Place"
+      - inputText: "$150 gift card"
+      
+      - assertVisible: "3rd Place"
+      - inputText: "$100 gift card"
+      
+      - assertVisible: "Participation Reward"
+      - inputText: "Challenge completion badge"
+      
+      # Test visibility settings
+      - assertVisible: "Public Challenge"
+      - assertVisible: "Featured Challenge"
+      
+      # Create the challenge
+      - tapOn: "Create Challenge"
+      
+      # Should show success
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Challenge Leaderboard
+- runFlow:
+    when:
+      visible: "30-Day Workout Challenge"
+    commands:
+      - tapOn: "30-Day Workout Challenge"
+      - assertVisible: "30-Day Workout Challenge"
+      
+      # Test leaderboard tabs
+      - assertVisible: "Leaderboard"
+      - assertVisible: "Details"
+      
+      # Test challenge status
+      - assertVisible: "days left"
+      - assertVisible: "Goal:"
+      - assertVisible: "30 workouts"
+      
+      # Test leaderboard functionality
+      - assertVisible: "Leaderboard"
+      - assertVisible: "participants"
+      
+      # Test joining challenge (if not already joined)
+      - runFlow:
+          when:
+            visible: "Join Challenge"
+          commands:
+            - tapOn: "Join Challenge"
+
+# Test User Progress Update (if participating)
+- runFlow:
+    when:
+      visible: "Your Progress"
+    commands:
+      - assertVisible: "Your Progress"
+      - assertVisible: "Rank #"
+      
+      # Test progress update
+      - assertVisible: "Add workouts"
+      - inputText: "1"
+      - tapOn: "Update"
+      
+      # Should update progress
+      - runFlow:
+          when:
+            visible: "1 workouts"
+          commands:
+            - assertVisible: "1 workouts"
+
+# Test Challenge Details Tab
+- tapOn: "Details"
+- assertVisible: "Details"
+- assertVisible: "About This Challenge"
+- assertVisible: "Challenge Details"
+- assertVisible: "Duration"
+- assertVisible: "Goal"
+- assertVisible: "Participants"
+- assertVisible: "Entry Fee"
+- assertVisible: "Challenge Rules"
+- assertVisible: "Complete at least 1 workout per day"
+- assertVisible: "Challenge Creator"
+
+# Test Prizes & Rewards (if available)
+- runFlow:
+    when:
+      visible: "Prizes & Rewards"
+    commands:
+      - assertVisible: "Prizes & Rewards"
+      - assertVisible: "1st Place: $200 gift card"
+      - assertVisible: "2nd Place: $150 gift card"
+      - assertVisible: "3rd Place: $100 gift card"
+      - assertVisible: "Participation: Challenge completion badge"
+
+# Test Challenge Rankings
+- tapOn: "Leaderboard"
+- runFlow:
+    when:
+      visible: "trophy"  # 1st place icon
+    commands:
+      - assertVisible: "trophy"
+      
+- runFlow:
+    when:
+      visible: "medal"  # 2nd/3rd place icons
+    commands:
+      - assertVisible: "medal"
+
+# Test Team Challenges (if available)
+- runFlow:
+    when:
+      visible: "Team:"
+    commands:
+      - assertVisible: "Team:"
+
+# Test Challenge Progress Tracking
+- runFlow:
+    when:
+      visible: "% Complete"
+    commands:
+      - assertVisible: "% Complete"
+      
+- runFlow:
+    when:
+      visible: "days left"
+    commands:
+      - assertVisible: "days left"
+
+# Test Event Registration Management
+- tapOn: "arrow-back"  # Go back from challenge
+- runFlow:
+    when:
+      visible: "My Events"
+    commands:
+      - tapOn: "My Events"
+      - assertVisible: "Registered Events"
+      - assertVisible: "My Events"
+      
+      # Test registered events
+      - runFlow:
+          when:
+            visible: "Morning Yoga Session"
+          commands:
+            - assertVisible: "Morning Yoga Session"
+            - assertVisible: "REGISTERED"
+            
+            # Test event actions
+            - runFlow:
+                when:
+                  visible: "Join Meeting"
+                commands:
+                  - assertVisible: "Join Meeting"
+            
+            # Test cancellation (carefully)
+            - runFlow:
+                when:
+                  visible: "Cancel Registration"
+                commands:
+                  - tapOn: "Cancel Registration"
+                  - assertVisible: "Cancel Registration"
+                  - tapOn: "No"  # Don't actually cancel
+
+# Test Challenge Management
+- runFlow:
+    when:
+      visible: "My Challenges"
+    commands:
+      - tapOn: "My Challenges"
+      - assertVisible: "Active Challenges"
+      - assertVisible: "Completed Challenges"
+      
+      # Test active challenges
+      - runFlow:
+          when:
+            visible: "30-Day Workout Challenge"
+          commands:
+            - assertVisible: "30-Day Workout Challenge"
+            - assertVisible: "ACTIVE"
+            - assertVisible: "workouts"
+            - assertVisible: "% Complete"
+
+# Test Challenge Statistics
+- runFlow:
+    when:
+      visible: "Challenge Stats"
+    commands:
+      - tapOn: "Challenge Stats"
+      - assertVisible: "Total Challenges"
+      - assertVisible: "Active Challenges"
+      - assertVisible: "Completion Rate"
+      - assertVisible: "Rank"
+
+# Test Event Notifications (if available)
+- runFlow:
+    when:
+      visible: "Event Reminders"
+    commands:
+      - assertVisible: "Event Reminders"
+      - assertVisible: "Upcoming Events"
+
+# Test Error Handling
+- runFlow:
+    when:
+      visible: "Failed to load"
+    commands:
+      - assertVisible: "Failed to load"
+      - assertVisible: "Try Again"
+      - tapOn: "Try Again"
+
+# Test Loading States
+- runFlow:
+    when:
+      visible: "Loading events..."
+    commands:
+      - assertVisible: "Loading events..."
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Loading challenges..."
+    commands:
+      - assertVisible: "Loading challenges..."
+      - waitForAnimationToEnd
+
+# Test Empty States
+- runFlow:
+    when:
+      visible: "No events found"
+    commands:
+      - assertVisible: "No events found"
+      - assertVisible: "Create an event"
+
+- runFlow:
+    when:
+      visible: "No challenges yet"
+    commands:
+      - assertVisible: "No challenges yet"
+      - assertVisible: "Create a challenge"
+
+- runFlow:
+    when:
+      visible: "No participants yet"
+    commands:
+      - assertVisible: "No participants yet"
+      - assertVisible: "Be the first to join"
+
+# Test Event/Challenge Search Results
+- runFlow:
+    when:
+      visible: "Search results"
+    commands:
+      - assertVisible: "Search results"
+      - runFlow:
+          when:
+            visible: "No results found"
+          commands:
+            - assertVisible: "No results found"
+            - assertVisible: "Try adjusting your search"
+
+# Test Event Calendar Integration (if available)
+- runFlow:
+    when:
+      visible: "Add to Calendar"
+    commands:
+      - tapOn: "Add to Calendar"
+
+# Test Social Sharing (if available)
+- runFlow:
+    when:
+      visible: "Share Event"
+    commands:
+      - tapOn: "Share Event"
+      - assertVisible: "Share"
+
+- runFlow:
+    when:
+      visible: "Share Challenge"
+    commands:
+      - tapOn: "Share Challenge"
+      - assertVisible: "Share"
+
+# Test Challenge Progress Verification (if available)
+- runFlow:
+    when:
+      visible: "Verify Progress"
+    commands:
+      - assertVisible: "Verify Progress"
+      - assertVisible: "Photo verification"
+
+# Final verification - ensure events & challenges are fully functional
+- assertVisible: "Events & Challenges"
+
+# Test navigation back to main app
+- tapOn: "arrow-back"
+- assertVisible: "Profile"
+
+# Verify events & challenges integration with main app
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+
+# Test activity integration with events/challenges
+- runFlow:
+    when:
+      visible: "Event Activity"
+    commands:
+      - assertVisible: "Event Activity"
+      - assertVisible: "Challenge Progress"
+
+# Test notifications integration
+- runFlow:
+    when:
+      visible: "Event Reminder"
+    commands:
+      - assertVisible: "Event Reminder"
+      - assertVisible: "Challenge Update"
+
+# Test community features
+- tapOn: "Chat"
+- runFlow:
+    when:
+      visible: "Event Chat"
+    commands:
+      - assertVisible: "Event Chat"
+      - assertVisible: "Challenge Discussion"

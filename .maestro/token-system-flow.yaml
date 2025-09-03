@@ -1,0 +1,314 @@
+appId: any
+tags:
+  - token-system
+  - virtual-currency
+  - marketplace
+  - earning-tokens
+---
+# Token System E2E Test
+# Tests the complete token system functionality including balance display,
+# earning tokens through activities, transaction history, and marketplace
+
+- launchApp
+- assertVisible: "Activities"
+
+# Navigate to Activities tab
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+- assertVisible: "Track your fitness journey"
+
+# Test Token Balance Display
+- assertVisible: "Your Tokens"
+- assertVisible: "Token Center"
+
+# Test token balance component
+- assertVisible: "Tokens"
+- runFlow:
+    when:
+      visible: "diamond"  # Token icon
+    commands:
+      - assertVisible: "diamond"
+
+# Test token stats display
+- runFlow:
+    when:
+      visible: "This week earned:"
+    commands:
+      - assertVisible: "This week earned:"
+      - assertVisible: "Lifetime earned:"
+
+# Navigate to Token Center
+- tapOn: "Token Center"
+- assertVisible: "Token Center"
+
+# Test Token Dashboard tabs
+- assertVisible: "Overview"
+- assertVisible: "History" 
+- assertVisible: "Earning"
+
+# Test Overview tab (default)
+- assertVisible: "Current Balance"
+- assertVisible: "Your Stats"
+- assertVisible: "Quick Actions"
+
+# Test stats display
+- assertVisible: "Lifetime Earned"
+- assertVisible: "Lifetime Spent"
+- assertVisible: "This Week"
+- assertVisible: "Transactions"
+
+# Test quick actions
+- assertVisible: "Marketplace"
+- assertVisible: "How to Earn"
+
+# Test marketplace access
+- tapOn: "Marketplace"
+- assertVisible: "Token Marketplace"
+
+# Test marketplace categories
+- assertVisible: "All"
+- assertVisible: "Badges"
+- assertVisible: "Themes"
+- assertVisible: "Avatars"
+- assertVisible: "Boosts"
+- assertVisible: "Premium"
+
+# Test category filtering
+- tapOn: "Badges"
+- tapOn: "Themes"
+- tapOn: "All"
+
+# Test marketplace items (if any exist)
+- runFlow:
+    when:
+      visible: "Purchase"
+    commands:
+      # Test item details
+      - assertVisible: "diamond"  # Token cost icon
+      - assertVisible: "Purchase"
+
+# Test insufficient funds scenario
+- runFlow:
+    when:
+      visible: "Need"
+    commands:
+      - assertVisible: "Need"
+      - assertVisible: "more"
+
+# Close marketplace
+- tapOn: "close"
+- assertVisible: "Token Center"
+
+# Test History tab
+- tapOn: "History"
+- assertVisible: "Recent Transactions"
+
+# Test transaction history display
+- runFlow:
+    when:
+      visible: "No transactions yet"
+    commands:
+      - assertVisible: "No transactions yet"
+      - assertVisible: "Complete activities and unlock achievements to earn tokens!"
+
+# Test with transactions (if any exist)
+- runFlow:
+    when:
+      visible: "Balance:"
+    commands:
+      - assertVisible: "Balance:"
+      # Should see transaction details
+      - runFlow:
+          when:
+            visible: "Activity completed"
+          commands:
+            - assertVisible: "activity"  # Activity icon
+            - assertVisible: "+"  # Positive amount
+
+      - runFlow:
+          when:
+            visible: "Purchased:"
+          commands:
+            - assertVisible: "storefront"  # Marketplace icon
+            - assertVisible: "-"  # Negative amount
+
+# Test Earning tab
+- tapOn: "Earning"
+- assertVisible: "How to Earn Tokens"
+
+# Test earning methods display
+- assertVisible: "Activities"
+- assertVisible: "Complete fitness activities to earn 10-50 tokens"
+
+- assertVisible: "Achievements"
+- assertVisible: "Unlock badges (50 tokens) and tier promotions (100 tokens)"
+
+- assertVisible: "Streaks"
+- assertVisible: "Maintain activity streaks"
+
+# Go back to overview
+- tapOn: "Overview"
+- assertVisible: "Current Balance"
+
+# Test token earning through activity logging
+- tapOn: "close"  # Close token dashboard
+- assertVisible: "Your Activities"
+
+# Test quick log to earn tokens
+- runFlow:
+    when:
+      visible: "+"  # Quick log button
+    commands:
+      - tapOn: "+"
+      - assertVisible: "Quick Log Activity"
+      
+      # Select an activity type
+      - runFlow:
+          when:
+            visible: "Gym Workout"
+          commands:
+            - tapOn: "Gym Workout"
+            - assertVisible: "Duration"
+            - assertVisible: "Notes"
+            
+            # Log the activity
+            - inputText: "Token system test workout"
+            - tapOn: "Log Activity"
+            
+            # Should show success and token reward
+            - runFlow:
+                when:
+                  visible: "Activity logged successfully!"
+                commands:
+                  - assertVisible: "Activity logged successfully!"
+                  - runFlow:
+                      when:
+                        visible: "earned"
+                      commands:
+                        - assertVisible: "earned"
+                        - assertVisible: "tokens"
+
+# Verify token balance increased
+- assertVisible: "Your Tokens"
+- tapOn: "Token Center"
+- assertVisible: "Current Balance"
+
+# Check transaction history was updated
+- tapOn: "History"
+- runFlow:
+    when:
+      visible: "Activity completed"
+    commands:
+      - assertVisible: "Activity completed"
+      - assertVisible: "+"
+      - assertVisible: "activity"
+
+# Test leaderboard (if available)
+- tapOn: "Overview"
+- runFlow:
+    when:
+      visible: "Top Earners"
+    commands:
+      - assertVisible: "Top Earners"
+      - assertVisible: "1"  # Rank indicator
+      - assertVisible: "diamond"  # Token icon in leaderboard
+
+# Test token integration with other systems
+- tapOn: "close"  # Close token dashboard
+- assertVisible: "Your Activities"
+
+# Test badge progression integration
+- runFlow:
+    when:
+      visible: "View All"  # Badge section
+    commands:
+      - tapOn: "View All"
+      - assertVisible: "Badge Dashboard"
+      
+      # Look for token rewards mention in badge descriptions
+      - runFlow:
+          when:
+            visible: "tokens"
+          commands:
+            - assertVisible: "tokens"
+            - assertVisible: "reward"
+
+      - tapOn: "arrow-back"
+
+# Test tier progression integration
+- runFlow:
+    when:
+      visible: "Your Tier Progress"
+    commands:
+      - assertVisible: "Your Tier Progress"
+      # Tier promotions should mention token rewards
+
+# Test error handling
+- tapOn: "Token Center"
+- assertVisible: "Token Center"
+
+# Test refresh functionality
+- runFlow:
+    when:
+      visible: "refresh"
+    commands:
+      - tapOn: "refresh"
+      - waitForAnimationToEnd
+
+# Test loading states
+- runFlow:
+    when:
+      visible: "Loading"
+    commands:
+      - assertVisible: "Loading"
+      - waitForAnimationToEnd
+
+# Test network error scenarios
+- runFlow:
+    when:
+      visible: "Failed to load"
+    commands:
+      - assertVisible: "Failed to load"
+      - assertVisible: "Try Again"
+      - tapOn: "Try Again"
+
+# Close and verify navigation
+- tapOn: "close"
+- assertVisible: "Your Activities"
+
+# Test token display persistence
+- assertVisible: "Your Tokens"
+- assertVisible: "diamond"
+
+# Navigate to other tabs to test token integration
+- tapOn: "Profile"
+- assertVisible: "Profile"
+
+# Go back to activities
+- tapOn: "Activities"
+- assertVisible: "Your Tokens"
+
+# Final verification - token system is working
+- tapOn: "Token Center"
+- tapOn: "Overview"
+- assertVisible: "Current Balance"
+- assertVisible: "Lifetime Earned"
+
+# Test that token values are reasonable (not negative, not extremely high)
+- runFlow:
+    when:
+      not:
+        visible: "-"  # No negative token balances in overview
+    commands:
+      - assertVisible: "Current Balance"
+
+# Test accessibility
+- runFlow:
+    when:
+      visible: "diamond"
+    commands:
+      - assertVisible: "diamond"  # Token icons should be visible
+
+# Complete the test
+- tapOn: "close"
+- assertVisible: "Your Activities"

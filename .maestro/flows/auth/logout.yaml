@@ -1,0 +1,39 @@
+# Authentication Test - Logout Flow
+appId: com.moai.native
+env:
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Start with login first
+- launchApp
+- tapOn: "Profile"
+
+# Quick login (assuming user might be logged in)
+- runFlow:
+    when:
+      visible: "Sign In"
+    commands:
+      - tapOn: "Sign In"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: "Password"
+      - inputText: "${TEST_PASSWORD}"
+      - tapOn: "Sign In"
+      - assertVisible:
+          text: "Activities|Dashboard"
+
+# Now test logout
+- tapOn: "Profile"
+- assertVisible:
+    text: "Sign Out|Logout"
+
+- tapOn: 
+    text: "Sign Out|Logout"
+    
+# Verify logout successful
+- assertVisible:
+    text: "Sign In|Login"
+
+# Verify protected content is no longer accessible
+- tapOn: "Activities"
+- assertVisible:
+    text: "Sign In|Login|Protected"

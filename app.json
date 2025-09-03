@@ -33,6 +33,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "@expo/vector-icons",
+        {
+          "fonts": ["MaterialIcons.ttf"]
+        }
       ]
     ],
     "experiments": {

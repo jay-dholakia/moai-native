@@ -1,0 +1,200 @@
+appId: any
+tags:
+  - coach-platform
+  - coaching
+  - client-management
+---
+# Coach Platform Flow E2E Test
+# Tests the complete coach platform functionality including onboarding,
+# dashboard, client management, and coach-specific features
+
+- launchApp
+- assertVisible: "Profile"
+
+# Navigate to Profile tab
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- assertVisible: "Manage your account and preferences"
+
+# Test Coach Onboarding for non-coaches
+- assertVisible: "Coaching"
+- scrollDown
+- assertVisible: "Become a MOAI Coach"
+- assertVisible: "Help others achieve their fitness goals and earn income"
+
+# Test coach onboarding progress display
+- assertVisible: "Setup Progress"
+- assertVisible: "Apply to become a coach"
+- assertVisible: "Set up coach profile"
+- assertVisible: "Add bio and specialties"
+- assertVisible: "Activate coaching profile"
+
+# Test coach benefits section
+- assertVisible: "Coach Benefits"
+- assertVisible: "Earn $79-199/month per client"
+- assertVisible: "Build meaningful client relationships"
+- assertVisible: "Flexible schedule that works for you"
+
+# Test apply to coach button (this is a placeholder as actual application would require more complex flow)
+- tapOn: "Apply to Become Coach"
+# In a real scenario, this would navigate to application form
+
+# For testing purposes, we'll simulate a coach user
+# (In actual implementation, this would require database seeding or test user setup)
+
+# Navigate back to test coach dashboard access
+- scrollUp
+
+# Test coach dashboard access (assuming user is already a coach)
+# This section would only work if the test user has coach privileges
+- runFlow:
+    when:
+      visible: "Coach Dashboard"
+    commands:
+      - tapOn: "Coach Dashboard"
+      - assertVisible: "Welcome"
+      - assertVisible: "Coach Dashboard"
+      
+      # Test dashboard stats
+      - assertVisible: "Overview"
+      - assertVisible: "Active Clients"
+      - assertVisible: "Monthly Revenue"
+      - assertVisible: "Sessions This Week"
+      - assertVisible: "Retention Rate"
+      
+      # Test pending clients section (if any)
+      - runFlow:
+          when:
+            visible: "Pending Approvals"
+          commands:
+            - assertVisible: "PENDING"
+            - runFlow:
+                when:
+                  visible: "View All"
+                commands:
+                  - tapOn: "View All"
+      
+      # Test active clients section
+      - assertVisible: "Active Clients"
+      - runFlow:
+          when:
+            visible: "View All"
+          commands:
+            - tapOn: "View All"
+            - assertVisible: "Client Management"
+            
+            # Test client filtering
+            - assertVisible: "All"
+            - assertVisible: "Pending"
+            - assertVisible: "Active"
+            - assertVisible: "Paused"
+            - assertVisible: "Cancelled"
+            
+            # Test filter functionality
+            - tapOn: "Pending"
+            - tapOn: "Active"
+            - tapOn: "All"
+            
+            # Test client actions (if clients exist)
+            - runFlow:
+                when:
+                  visible: "APPROVE"
+                commands:
+                  - tapOn: "APPROVE"
+                  # Should show confirmation or update status
+            
+            - runFlow:
+                when:
+                  visible: "NOTE"
+                commands:
+                  - tapOn: "NOTE"
+                  - assertVisible: "Add Client Note"
+                  - inputText: "Test coaching note for client progress tracking"
+                  - tapOn: "Add Note"
+            
+            # Go back to dashboard
+            - tapOn:
+                id: "arrow-back"
+      
+      # Test quick actions
+      - assertVisible: "Quick Actions"
+      - assertVisible: "Manage Clients"
+      - assertVisible: "Edit Profile"
+      
+      # Test manage clients navigation
+      - tapOn: "Manage Clients"
+      - assertVisible: "Client Management"
+      - tapOn:
+          id: "arrow-back"
+      
+      # Test coach profile settings
+      - tapOn: "Edit Profile"
+      # Should return to main profile screen
+      - assertVisible: "Profile"
+
+# Test coach guard functionality
+# This tests that non-coach users can't access coach-only features
+- runFlow:
+    when:
+      not:
+        visible: "Coach Dashboard"
+    commands:
+      # Should see onboarding instead
+      - assertVisible: "Become a MOAI Coach"
+      - assertVisible: "Apply to Become Coach"
+
+# Test navigation between different coach states
+- scrollDown
+
+# Test coach status loading states
+- assertVisible: "Coaching"
+- runFlow:
+    when:
+      visible: "Loading coach status..."
+    commands:
+      - waitForAnimationToEnd
+
+# Test integration with other app features
+- scrollUp
+- assertVisible: "Profile"
+
+# Test that coach functionality doesn't interfere with other features
+- assertVisible: "Activities"
+- assertVisible: "Workout Buddy"
+- assertVisible: "Settings"
+
+# Navigate to Activities tab to test coach integration there
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+
+# Should still see regular activity features
+- assertVisible: "Your Tier Progress"
+- assertVisible: "Your Badges"
+
+# Go back to Profile to complete coach testing
+- tapOn: "Profile"
+- assertVisible: "Coaching"
+
+# Test coach analytics (if available)
+- runFlow:
+    when:
+      visible: "Coach Dashboard"
+    commands:
+      - tapOn: "Coach Dashboard"
+      - assertVisible: "Overview"
+      
+      # Stats should be numerical and reasonable
+      - assertVisible: "0" # Active clients for new coach
+      - assertVisible: "$0" # Monthly revenue for new coach
+      - assertVisible: "0%" # Retention rate for new coach
+
+# Final verification - ensure coach platform is properly integrated
+- scrollDown
+- assertVisible: "Coaching"
+
+# Test error handling
+- runFlow:
+    when:
+      visible: "Unable to load coach dashboard"
+    commands:
+      - assertVisible: "Please try again later"

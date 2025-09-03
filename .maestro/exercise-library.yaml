@@ -1,0 +1,190 @@
+appId: any
+---
+# Exercise Library E2E Test
+# Tests exercise browsing, searching, filtering, and selection
+
+- launchApp
+
+# Navigate to workout builder or exercise library
+- tapOn: "Workouts"
+- tapOn: "Create Workout"
+
+# Test Exercise Library Access
+- tapOn: "Add Exercise"
+- assertVisible: "Exercise Library"
+
+# Test Popular Exercises Tab
+- tapOn: "Popular"
+- assertVisible: "Most popular exercises"
+- scroll
+
+# Test Recommended Exercises Tab  
+- tapOn: "For You"
+- assertVisible: "Personalized recommendations"
+- scroll
+
+# Test Categories Tab
+- tapOn: "Categories"
+- assertVisible: "Browse exercises by category"
+- assertVisible: "💪"  # Strength category icon
+- assertVisible: "🏃"  # Cardio category icon
+
+# Test All Exercises Tab
+- tapOn: "All"
+- assertVisible: "All exercises in our database"
+- scroll
+
+# Test Exercise Search
+- tapOn:
+    id: "search-icon"
+- assertVisible: "Exercise Search"
+- tapOn:
+    id: "search-input"
+- inputText: "push"
+- assertVisible: "push"  # Search results should show
+
+# Test Exercise Filters
+- tapOn:
+    id: "filter-toggle"
+- assertVisible: "Filters"
+- assertVisible: "Exercise Type"
+- assertVisible: "Difficulty"
+
+# Test Exercise Type Filter
+- tapOn: "💪"  # Strength exercises
+- assertVisible: "strength"
+- tapOn: "🏃"  # Cardio exercises  
+- assertVisible: "cardio"
+
+# Test Difficulty Filter
+- tapOn: "Beginner"
+- assertVisible: "beginner"
+
+# Test Muscle Group Filter
+- tapOn: "Muscle Groups"
+- tapOn: "Chest"
+- assertVisible: "Chest"
+
+# Test Clear Filters
+- tapOn: "Clear"
+- assertVisible: "All exercises"
+
+# Test Exercise Selection
+- tapOn:
+    text: "Push"
+    index: 0
+- assertVisible: "Exercise Details"
+- assertVisible: "Description"
+- assertVisible: "Target Muscles"
+
+# Test Exercise Detail Video
+- tapOn:
+    id: "video-play-button"
+    optional: true
+
+# Test Select Exercise
+- tapOn: "Select Exercise"
+- assertVisible: "Configure Exercise"
+
+# Test Exercise Configuration
+- assertVisible: "Sets"
+- assertVisible: "Reps"
+- assertVisible: "Weight"
+
+# Configure exercise parameters
+- tapOn:
+    id: "sets-input"
+- clearText
+- inputText: "3"
+
+- tapOn:
+    id: "reps-input"  
+- clearText
+- inputText: "12"
+
+- tapOn:
+    id: "weight-input"
+- clearText
+- inputText: "135"
+
+# Add exercise to workout
+- tapOn: "Add"
+- assertVisible: "Push"  # Exercise should appear in workout
+- assertVisible: "3 sets × 12 reps @ 135lbs"
+
+# Test Exercise Management in Workout
+- tapOn:
+    id: "edit-exercise-0"
+- assertVisible: "Configure Exercise"
+- tapOn: "Cancel"
+
+- tapOn:
+    id: "duplicate-exercise-0"
+- assertVisible: "Push"
+- assertVisible:
+    text: "Push"
+    index: 1  # Duplicate should appear
+
+- tapOn:
+    id: "remove-exercise-1"
+# Duplicate should be removed
+
+# Test Workout Preview
+- tapOn: "Preview Workout"
+- assertVisible: "Workout Preview"
+- assertVisible: "2"  # Exercise count
+- assertVisible: "Minutes"  # Duration
+
+# Test Save Workout
+- tapOn: "Save Template"
+- assertVisible: "Workout Saved"
+
+# Test Search Performance
+- tapOn: "Exercise Search"
+- tapOn:
+    id: "search-input"
+- inputText: "a"
+- wait: 500ms
+- inputText: "ab"  # Test real-time search
+- wait: 500ms
+- assertVisible:
+    text: "ab"
+    optional: true
+
+# Test Exercise Categories Navigation
+- tapOn: "Categories"
+- tapOn:
+    text: "strength"
+- assertVisible: "strength exercises"
+
+# Test Filter Combinations
+- tapOn: "Filters"
+- tapOn: "Intermediate"  # Difficulty
+- tapOn: "Arms"         # Muscle group
+- tapOn: "Dumbbells"    # Equipment
+- assertVisible: "3"    # Active filters count
+- tapOn: "Clear"
+
+# Test Exercise Library Persistence
+- tapOn: "Back"
+- tapOn: "Add Exercise"
+- assertVisible: "Exercise Library"  # Should return to same state
+
+# Test Offline Behavior (if applicable)
+# - turnOnAirplaneMode
+# - assertVisible: "Offline"
+# - turnOffAirplaneMode
+
+# Test Performance with Large Lists
+- tapOn: "All"
+- scroll:
+    direction: DOWN
+    speed: 50
+- scroll:
+    direction: DOWN  
+    speed: 50
+- assertVisible: "Loading more exercises"  # Pagination
+
+# Cleanup
+- tapOn: "Cancel"
+- assertVisible: "Workouts"

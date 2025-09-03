@@ -1,0 +1,31 @@
+appId: com.moai.native
+env:
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Verify Test Data Helper
+# Checks that all expected test data exists
+
+# Login first
+- runFlow: helpers/quick-login.yaml
+
+# Verify Activities
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- assertVisible: "Morning Run"
+- assertVisible: "Upper Body Workout"
+- assertVisible: "Evening Walk"
+
+# Verify Moais
+- tapOn: "Moais"
+- waitForAnimationToEnd  
+- assertVisible: "Morning Runners"
+- assertVisible: "Strength Training Club"
+- assertVisible: "Yoga & Mindfulness"
+
+# Verify Profile
+- tapOn: "Profile"
+- assertVisible: "E2E Test User"
+- assertVisible: "${TEST_EMAIL}"
+
+- takeScreenshot: "test-data-verified"

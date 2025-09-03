@@ -1,0 +1,7 @@
+# Ignore database migrations
+supabase/migrations/*
+
+# Ignore database schemas except remote_schema_latest.sql
+supabase/schema/*
+!supabase/schema/remote_schema_latest.sql
+supabase/schemas/*

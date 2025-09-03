@@ -1,0 +1,59 @@
+# Typing Indicators E2E Test
+appId: com.moai.native
+---
+# Test typing indicators functionality
+
+# Test 1: Navigate to chat
+- launchApp
+- assertVisible: "Home"
+
+# Navigate to chat tab
+- tapOn: "Chat"
+- assertVisible: "Chat"
+
+# Find and open a moai chat channel
+- tapOn: 
+    text: ".*Moai.*" # Find any moai in the list
+    
+# Wait for chat to load
+- assertVisible: "Send a message"
+
+# Test 2: Test typing behavior
+# Start typing in message input
+- tapOn: "Type a message..."
+- inputText: "Testing typing indicator"
+
+# Wait for a moment to let typing indicator potentially show
+# (Note: In a real scenario with multiple users, we'd see typing indicators)
+- wait: 1000
+
+# Clear the input to test stop typing
+- clearText
+- wait: 500
+
+# Test 3: Test that typing doesn't trigger on empty input
+- tapOn: "Type a message..."
+- wait: 500
+
+# Test 4: Test typing timeout
+# Type something and wait for auto-timeout
+- inputText: "Testing timeout"
+- wait: 4000 # Should timeout after 3 seconds
+
+# Test 5: Send message (should stop typing)
+- inputText: "Final test message"
+- tapOn: "Send"
+
+# Verify message was sent
+- assertVisible: "Final test message"
+
+# Test 6: Test typing in different message types
+# Try in emoji mode
+- tapOn: "😊"
+- assertVisible: "😊" # Emoji picker should show
+
+# Close emoji picker
+- tapOn: "Type a message..."
+
+# Test completed successfully
+- assertVisible: "Chat" # Verify we're still in chat screen

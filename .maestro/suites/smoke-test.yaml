@@ -1,0 +1,124 @@
+# Comprehensive Smoke Test - Core App Functionality
+# Consolidates: basic-app-launch, simple-launch, basic-navigation, and core smoke test
+appId: com.moai.native
+env:
+  TEST_EMAIL: "test@moai.com"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Test 1: App Launch and Initial State
+- launchApp
+- waitForAnimationToEnd
+
+# Test 2: Handle Authentication State
+# Logout if already authenticated for consistent testing
+- runFlow:
+    when:
+      visible: "Activities|Moais|Profile"
+    commands:
+      - tapOn: "Profile"
+      - waitForAnimationToEnd  
+      - scroll
+      - tapOn:
+          text: "Sign Out|Logout"
+      - waitForAnimationToEnd
+      - assertVisible: "Welcome Back|Sign In"
+
+# Test 3: Verify Authentication Screen
+- assertVisible:
+    text: "Welcome Back|Sign In"
+    timeout: 10000
+- takeScreenshot: "smoke-01-auth-screen"
+
+# Test 4: Check Sign Up Navigation (if available)
+- runFlow:
+    when:
+      visible: "Sign Up"
+    commands:
+      - tapOn: "Sign Up"
+      - assertVisible: "Join Moai|Create Account"
+      - tapOn: "Sign In|Back"
+
+# Test 5: Basic Authentication Flow
+- runFlow:
+    when:
+      visible: "Sign In|Welcome Back"
+    commands:
+      - tapOn:
+          text: "Enter your email|Email"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn:
+          text: "Enter your password|Password"
+      - inputText: "${TEST_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      - waitForAnimationToEnd
+
+# Test 6: Verify Main Navigation is Accessible
+- assertVisible:
+    text: "Activities|Moais|Profile"
+    timeout: 10000
+- takeScreenshot: "smoke-02-main-navigation"
+
+# Test 7: Test Core Tab Navigation
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Activities|Quick Log|Recent Activities"
+    timeout: 5000
+
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Moais|Featured|Your Communities"
+    timeout: 5000
+
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Profile|${TEST_EMAIL}|Settings"
+    timeout: 5000
+
+# Test 8: Rapid Tab Switching (Performance Test)
+- tapOn: "Activities"
+- assertVisible: "Activities"
+- tapOn: "Moais"
+- assertVisible: "Moais"
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- tapOn: "Activities"
+- assertVisible: "Activities"
+
+# Test 9: Basic Scroll Interactions
+- tapOn: "Activities"
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+
+- tapOn: "Moais"
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+- swipe:
+    start: 50%, 20%
+    end: 50%, 80%
+
+# Test 10: App Background/Foreground Test
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Activities|Moais|Profile"
+    timeout: 10000
+- takeScreenshot: "smoke-03-session-persistence"
+
+# Test 11: Memory and State Integrity
+- tapOn: "Profile"
+- assertVisible:
+    text: "Profile"
+    timeout: 5000
+
+# Smoke test completed successfully
+- takeScreenshot: "smoke-04-test-completed"

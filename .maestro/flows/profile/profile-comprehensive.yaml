@@ -1,0 +1,295 @@
+# Comprehensive Profile Feature Test
+appId: com.moai.native
+env:
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Setup - Login with test user
+- launchApp
+- waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Sign In|Welcome Back"
+    commands:
+      - tapOn: 
+          text: "Enter your email|Email"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: 
+          text: "Enter your password|Password"
+      - inputText: "${TEST_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      - waitForAnimationToEnd
+
+# Test 1: Navigate to Profile Tab
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: "Profile"
+- takeScreenshot: "profile-01-main-screen"
+
+# Test 2: Verify User Information Display
+- assertVisible:
+    text: "E2E Test User"
+    timeout: 5000
+- assertVisible:
+    text: "${TEST_EMAIL}"
+    timeout: 5000
+- takeScreenshot: "profile-02-user-info"
+
+# Test 3: Test Profile Avatar
+- runFlow:
+    when:
+      visible:
+        text: "E2E|ET|Avatar"
+    commands:
+      - tapOn:
+          text: "E2E|ET|Avatar"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible:
+              text: "Change|Upload|Camera|Gallery"
+          commands:
+            - takeScreenshot: "profile-03-avatar-options"
+            - tapOn:
+                text: "Cancel|Close|Back"
+            - waitForAnimationToEnd
+
+# Test 4: Test Profile Statistics/Info
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Moais|Activities|Friends|Stats"
+    commands:
+      - assertVisible:
+          text: "Moais|Activities|Friends"
+          timeout: 5000
+      - takeScreenshot: "profile-04-stats"
+
+# Test 5: Test Edit Profile Functionality
+- runFlow:
+    when:
+      visible:
+        text: "Edit|Settings|Preferences"
+    commands:
+      - tapOn:
+          text: "Edit|Settings"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Full Name|Username|Bio|Email"
+          timeout: 5000
+      - takeScreenshot: "profile-05-edit-profile"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 6: Test Bio Section
+- runFlow:
+    when:
+      visible:
+        text: "Automated test user|Bio|About"
+    commands:
+      - assertVisible:
+          text: "Automated test user"
+          timeout: 5000
+      - takeScreenshot: "profile-06-bio-section"
+
+# Test 7: Test Settings/Preferences
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Settings|Preferences|Privacy"
+    commands:
+      - tapOn:
+          text: "Settings|Preferences"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Notifications|Privacy|Security|Theme"
+          timeout: 5000
+      - takeScreenshot: "profile-07-settings"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 8: Test Activity History/Stats
+- runFlow:
+    when:
+      visible:
+        text: "Recent Activities|Activity History"
+    commands:
+      - tapOn:
+          text: "Recent Activities|Activity History"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Morning Run|Upper Body|Activities"
+          timeout: 5000
+      - takeScreenshot: "profile-08-activity-history"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 9: Test Moai Memberships
+- runFlow:
+    when:
+      visible:
+        text: "My Moais|Joined Moais"
+    commands:
+      - tapOn:
+          text: "My Moais|Joined Moais"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Morning Runners|Strength Training"
+          timeout: 5000
+      - takeScreenshot: "profile-09-moai-memberships"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 10: Test Friends/Connections
+- runFlow:
+    when:
+      visible:
+        text: "Friends|Connections|Following"
+    commands:
+      - tapOn:
+          text: "Friends|Connections"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "E2E Test Coach|E2E Test Member|Friends"
+          timeout: 5000
+      - takeScreenshot: "profile-10-friends"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 11: Test Achievements/Badges
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Achievements|Badges|Awards"
+    commands:
+      - tapOn:
+          text: "Achievements|Badges"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Achievement|Badge|Progress"
+          timeout: 5000
+      - takeScreenshot: "profile-11-achievements"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 12: Test Privacy Settings
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Privacy|Visibility|Public"
+    commands:
+      - tapOn:
+          text: "Privacy"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Profile Visibility|Activity Privacy|Friend Requests"
+          timeout: 5000
+      - takeScreenshot: "profile-12-privacy"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 13: Test Notification Settings
+- runFlow:
+    when:
+      visible:
+        text: "Notifications|Alerts"
+    commands:
+      - tapOn:
+          text: "Notifications"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Push Notifications|Email|Activity Updates"
+          timeout: 5000
+      - takeScreenshot: "profile-13-notifications"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 14: Test Account Settings
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Account|Security|Password"
+    commands:
+      - tapOn:
+          text: "Account|Security"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Change Password|Email|Security"
+          timeout: 5000
+      - takeScreenshot: "profile-14-account-settings"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 15: Test Help/Support
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "Help|Support|FAQ"
+    commands:
+      - tapOn:
+          text: "Help|Support"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "FAQ|Contact|Terms|Privacy Policy"
+          timeout: 5000
+      - takeScreenshot: "profile-15-help-support"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 16: Test About/App Info
+- scroll
+- runFlow:
+    when:
+      visible:
+        text: "About|Version|Info"
+    commands:
+      - tapOn:
+          text: "About|Version"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Version|Build|Terms of Service"
+          timeout: 5000
+      - takeScreenshot: "profile-16-about-app"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 17: Test Scroll Behavior
+- scroll
+- scroll
+- scrollUp
+- scrollUp
+- takeScreenshot: "profile-17-scroll-test"
+
+# Test 18: Verify Sign Out is accessible (but don't sign out yet)
+- scroll
+- assertVisible:
+    text: "Sign Out|Logout"
+    timeout: 5000
+- takeScreenshot: "profile-18-sign-out-visible"
+
+# Verify main functionality
+- scrollUp
+- assertVisible: "Profile"
+- assertVisible:
+    text: "E2E Test User"
+    timeout: 5000
+- takeScreenshot: "profile-19-test-completed"

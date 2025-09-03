@@ -1,0 +1,101 @@
+appId: com.moai.native
+env:
+  # Test User Credentials
+  TEST_USER_EMAIL: "e2e-test-user@moai.test"
+  TEST_USER_PASSWORD: "TestPassword123!"
+  
+  # Test Activity Data
+  ACTIVITY_1_NAME: "Morning Run"
+  ACTIVITY_1_DURATION: "30"
+  ACTIVITY_1_CALORIES: "300"
+  ACTIVITY_1_NOTES: "Great morning run in the park"
+  
+  ACTIVITY_2_NAME: "Upper Body Workout"
+  ACTIVITY_2_DURATION: "45"
+  ACTIVITY_2_CALORIES: "250"
+  ACTIVITY_2_NOTES: "Focused on chest and arms"
+  
+  ACTIVITY_3_NAME: "Evening Walk"
+  ACTIVITY_3_DURATION: "25"
+  ACTIVITY_3_CALORIES: "120"
+  ACTIVITY_3_NOTES: "Peaceful walk around the neighborhood"
+---
+# Create Test Activities Helper
+# This flow creates test activities for comprehensive testing
+
+# Login as test user
+- tapOn: "Enter your email"
+- inputText: "${TEST_USER_EMAIL}"
+- tapOn: "Enter your password"
+- inputText: "${TEST_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to Activities tab
+- tapOn: "Activities"
+- waitForAnimationToEnd
+
+# Create First Activity - Morning Run
+- tapOn: "Log Activity"
+- assertVisible: "Log New Activity"
+
+- tapOn: "Activity Name"
+- inputText: "${ACTIVITY_1_NAME}"
+- tapOn: "Activity Type"
+- tapOn: "Cardio"
+- tapOn: "Duration (minutes)"
+- inputText: "${ACTIVITY_1_DURATION}"
+- tapOn: "Calories Burned"
+- inputText: "${ACTIVITY_1_CALORIES}"
+- tapOn: "Notes"
+- inputText: "${ACTIVITY_1_NOTES}"
+- hideKeyboard
+- tapOn: "Save Activity"
+- waitForAnimationToEnd
+- assertVisible: "${ACTIVITY_1_NAME}"
+
+# Create Second Activity - Upper Body Workout
+- tapOn: "Log Activity"
+- assertVisible: "Log New Activity"
+
+- tapOn: "Activity Name"
+- inputText: "${ACTIVITY_2_NAME}"
+- tapOn: "Activity Type"
+- tapOn: "Strength"
+- tapOn: "Duration (minutes)"
+- inputText: "${ACTIVITY_2_DURATION}"
+- tapOn: "Calories Burned"
+- inputText: "${ACTIVITY_2_CALORIES}"
+- tapOn: "Notes"
+- inputText: "${ACTIVITY_2_NOTES}"
+- hideKeyboard
+- tapOn: "Save Activity"
+- waitForAnimationToEnd
+- assertVisible: "${ACTIVITY_2_NAME}"
+
+# Create Third Activity - Evening Walk
+- tapOn: "Log Activity"
+- assertVisible: "Log New Activity"
+
+- tapOn: "Activity Name"
+- inputText: "${ACTIVITY_3_NAME}"
+- tapOn: "Activity Type"
+- tapOn: "Walking"
+- tapOn: "Duration (minutes)"
+- inputText: "${ACTIVITY_3_DURATION}"
+- tapOn: "Calories Burned"
+- inputText: "${ACTIVITY_3_CALORIES}"
+- tapOn: "Notes"
+- inputText: "${ACTIVITY_3_NOTES}"
+- hideKeyboard
+- tapOn: "Save Activity"
+- waitForAnimationToEnd
+- assertVisible: "${ACTIVITY_3_NAME}"
+
+# Verify all activities are created
+- assertVisible: "${ACTIVITY_1_NAME}"
+- assertVisible: "${ACTIVITY_2_NAME}"
+- assertVisible: "${ACTIVITY_3_NAME}"
+
+- takeScreenshot: "test-activities-created"

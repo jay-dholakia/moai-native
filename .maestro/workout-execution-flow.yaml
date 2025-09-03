@@ -1,0 +1,122 @@
+appId: com.moai.native
+---
+# E2E Test: Workout Execution Flow
+# Tests the complete workout execution with XState machine
+
+- launchApp
+
+# Navigate to workout area (assuming there's a way to start a workout)
+- tapOn: 
+    text: "Workouts"
+    optional: true
+
+# Alternative: Try to find workout builder or exercise library
+- tapOn:
+    text: "Exercise Library"
+    optional: true
+
+# Alternative: Look for any workout-related navigation
+- tapOn:
+    text: "Build Workout"
+    optional: true
+
+# Test Workout Execution Components (if accessible)
+- runFlow:
+    when:
+      visible: "Start Workout"
+    commands:
+      # Test workout initialization
+      - tapOn: "Start Workout"
+      
+      # Test exercise performance input
+      - assertVisible: "Set 1"
+      - inputText: "12"  # reps
+      - inputText: "135" # weight
+      
+      # Test completing a set
+      - tapOn: "Complete Set"
+      
+      # Test rest timer (if appears)
+      - runFlow:
+          when:
+            visible: "Rest time"
+          commands:
+            - assertVisible: "Rest time"
+            - tapOn: "Skip Rest"
+            optional: true
+      
+      # Test exercise navigation
+      - tapOn:
+          id: "next-exercise"
+          optional: true
+      
+      # Test workout pause
+      - tapOn: "Pause Workout"
+      - assertVisible: "Workout Paused"
+      - tapOn: "Resume"
+      
+      # Test workout completion
+      - tapOn: "End Workout"
+      - tapOn: "Save Workout"
+
+# Test Exercise Performance Input Component (isolated)
+- runFlow:
+    when:
+      visible: "Reps"
+    commands:
+      # Test rep adjustment buttons
+      - tapOn:
+          text: "+1"
+          optional: true
+      - tapOn:
+          text: "-1"
+          optional: true
+      
+      # Test weight adjustment
+      - tapOn:
+          text: "+5"
+          optional: true
+      - tapOn:
+          text: "-5"
+          optional: true
+      
+      # Test notes input
+      - tapOn:
+          text: "How did this set feel?"
+          optional: true
+      - inputText: "Felt good, could do more"
+
+# Test Rest Timer Component (if visible)
+- runFlow:
+    when:
+      visible: "Rest timer"
+    commands:
+      # Test timer expansion
+      - tapOn:
+          id: "expand-timer"
+          optional: true
+      
+      # Test timer skip
+      - tapOn: "Skip Rest"
+      
+      # Test timer minimize
+      - tapOn:
+          id: "minimize-timer"
+          optional: true
+
+# Test Workout Progress Component
+- runFlow:
+    when:
+      visible: "Exercise Progress"
+    commands:
+      - assertVisible: "Exercise Progress"
+      - assertVisible:
+          text: "/ "  # Should show progress like "1 / 5"
+          optional: true
+
+# Verify no crashes or errors
+- assertNotVisible: "Error"
+- assertNotVisible: "Something went wrong"
+
+# Navigate back to safety
+- tapOn: "Home"

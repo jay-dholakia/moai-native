@@ -1,0 +1,106 @@
+appId: com.moai.native
+env:
+  # Test User Credentials
+  TEST_USER_EMAIL: "e2e-test-user@moai.test"
+  TEST_USER_PASSWORD: "TestPassword123!"
+  TEST_USER_NAME: "E2E Test User"
+  
+  COACH_USER_EMAIL: "e2e-coach@moai.test"
+  COACH_USER_PASSWORD: "CoachPassword123!"
+  COACH_USER_NAME: "E2E Coach"
+  
+  MEMBER_USER_EMAIL: "e2e-member@moai.test"
+  MEMBER_USER_PASSWORD: "MemberPassword123!"
+  MEMBER_USER_NAME: "E2E Member"
+---
+# Test Data Seeding Helper
+# This flow creates test users directly through the app's signup flow
+# and sets up comprehensive test data
+
+# Flow: Create Test User
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      # Navigate to signup
+      - tapOn: "Don't have an account? Sign Up"
+      - assertVisible: "Create Account"
+      
+      # Create first test user
+      - tapOn: "Enter your email"
+      - inputText: "${TEST_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - inputText: "${TEST_USER_PASSWORD}"
+      - tapOn: "Confirm password"
+      - inputText: "${TEST_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign Up"
+      
+      # Handle onboarding if present
+      - runFlow:
+          when:
+            visible: "Get Started"
+          commands:
+            - tapOn: "Skip for now"
+      
+      # Sign out to create next user
+      - waitForAnimationToEnd
+      - tapOn: "Profile"
+      - tapOn: "Sign Out"
+
+# Flow: Create Coach User
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      - tapOn: "Don't have an account? Sign Up"
+      - assertVisible: "Create Account"
+      
+      - tapOn: "Enter your email"
+      - inputText: "${COACH_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - inputText: "${COACH_USER_PASSWORD}"
+      - tapOn: "Confirm password"
+      - inputText: "${COACH_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign Up"
+      
+      - runFlow:
+          when:
+            visible: "Get Started"
+          commands:
+            - tapOn: "Skip for now"
+      
+      - waitForAnimationToEnd
+      - tapOn: "Profile"
+      - tapOn: "Sign Out"
+
+# Flow: Create Member User
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      - tapOn: "Don't have an account? Sign Up"
+      - assertVisible: "Create Account"
+      
+      - tapOn: "Enter your email"
+      - inputText: "${MEMBER_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - inputText: "${MEMBER_USER_PASSWORD}"
+      - tapOn: "Confirm password"
+      - inputText: "${MEMBER_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign Up"
+      
+      - runFlow:
+          when:
+            visible: "Get Started"
+          commands:
+            - tapOn: "Skip for now"
+      
+      - waitForAnimationToEnd
+      - tapOn: "Profile"
+      - tapOn: "Sign Out"
+
+# Success message
+- takeScreenshot: "test-users-created"

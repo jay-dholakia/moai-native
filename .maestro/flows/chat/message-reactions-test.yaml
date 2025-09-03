@@ -1,0 +1,100 @@
+# Message Reactions E2E Test
+appId: com.moai.native
+---
+# Test comprehensive message reaction functionality
+
+# Test 1: Navigate to chat and send a message
+- launchApp
+- assertVisible: "Home"
+
+# Navigate to chat tab
+- tapOn: "Chat"
+- assertVisible: "Chat"
+
+# Find and open a moai chat channel
+- tapOn: 
+    text: ".*Moai.*" # Find any moai in the list
+    
+# Wait for chat to load
+- assertVisible: "Send a message"
+
+# Send a test message for reactions
+- tapOn: "Send a message"
+- inputText: "Test message for reactions! 🎉"
+- tapOn: "Send"
+
+# Test 2: Add reactions to the message
+# Long press on the message to reveal reaction options
+- longPressOn:
+    text: "Test message for reactions! 🎉"
+
+# Wait for action buttons to appear
+- assertVisible: "😀"
+
+# Tap the reaction button to open picker
+- tapOn: "😀"
+
+# Test reaction picker appears
+- assertVisible: "React to this message"
+
+# Select a reaction (thumbs up)
+- tapOn: "👍"
+
+# Verify reaction appears on message
+- assertVisible: "👍"
+- assertVisible: "1" # reaction count
+
+# Test 3: Add another reaction
+- longPressOn:
+    text: "Test message for reactions! 🎉"
+- tapOn: "😀"
+- tapOn: "❤️"
+
+# Verify multiple reactions
+- assertVisible: "👍"
+- assertVisible: "❤️"
+- assertVisible: "1" # count for thumbs up
+- assertVisible: "1" # count for heart
+
+# Test 4: Remove a reaction by tapping on it
+- tapOn: "👍"
+
+# Verify reaction is removed (should not be visible anymore)
+- assertNotVisible:
+    text: "👍"
+
+# Heart reaction should still be there
+- assertVisible: "❤️"
+
+# Test 5: Long press on reaction to see reactors
+- longPressOn: "❤️"
+
+# Should show reactor modal (user who reacted)
+- assertVisible: "❤️ 1"
+
+# Close modal by tapping background
+- tapOn:
+    point: 50%, 20% # Tap outside modal
+
+# Test 6: Test reaction on different message types
+# Send another message
+- tapOn: "Send a message"
+- inputText: "Another test message"
+- tapOn: "Send"
+
+# Quick reaction test - tap the + button
+- tapOn: "+"
+
+# Select quick reaction
+- tapOn: "😂"
+
+# Verify reaction appears
+- assertVisible: "😂"
+- assertVisible: "1"
+
+# Test 7: Real-time reaction updates
+# (This would require two users, but we can test the UI)
+# Ensure reactions update immediately when added/removed
+
+# Test completed successfully
+- assertVisible: "Chat" # Verify we're still in chat screen

@@ -1,0 +1,34 @@
+appId: com.moai.native
+---
+# Master Test Environment Setup
+# This flow orchestrates the complete test environment setup
+# It should be run before any E2E test suite
+
+# Step 1: Launch app and ensure clean state
+- launchApp
+- waitForAnimationToEnd
+
+# Step 2: Clean up any existing test data
+# Note: This is optional, uncomment if you want to ensure clean state
+# - runFlow: helpers/test-data-cleanup.yaml
+
+# Step 3: Create test users
+- runFlow: helpers/test-data-seeding.yaml
+
+# Step 4: Create test moais
+- runFlow: helpers/create-test-moais.yaml
+
+# Step 5: Create test activities  
+- runFlow: helpers/create-test-activities.yaml
+
+# Step 6: Sign out and return to login screen
+- tapOn: "Profile"
+- scrollUntilVisible:
+    element: "Sign Out"
+    direction: DOWN
+- tapOn: "Sign Out"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back"
+
+# Setup complete
+- takeScreenshot: "test-environment-ready"

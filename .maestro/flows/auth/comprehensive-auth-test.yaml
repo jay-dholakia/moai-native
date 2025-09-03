@@ -1,0 +1,140 @@
+appId: com.moai.native
+env:
+  REGULAR_USER_EMAIL: "e2e-test-user@moai.test"
+  REGULAR_USER_PASSWORD: "TestPassword123!"
+  COACH_USER_EMAIL: "e2e-coach@moai.test"
+  COACH_USER_PASSWORD: "CoachPassword123!"
+  MEMBER_USER_EMAIL: "e2e-member@moai.test"
+  MEMBER_USER_PASSWORD: "MemberPassword123!"
+
+---
+# Comprehensive Authentication Test Suite
+
+# Test 1: App Launch and Initial State
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+- takeScreenshot: "01-app-launch"
+
+# Test 2: Invalid Login Attempt
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "invalid@email.com"
+- tapOn: 
+    text: "Enter your password|Password"  
+- inputText: "wrongpassword"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Invalid|Error|Wrong"
+- takeScreenshot: "02-invalid-login"
+
+# Clear fields for next test
+- tapOn:
+    text: "Enter your email|Email"
+- longPressOn:
+    text: "invalid@email.com"
+- tapOn: "Select All"
+- inputText: ""
+
+# Test 3: Valid Login with Regular User
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "${REGULAR_USER_EMAIL}"
+- tapOn: 
+    text: "Enter your password|Password"
+- inputText: "${REGULAR_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+- takeScreenshot: "03-successful-login"
+
+# Test 4: Navigate Through Main Tabs
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- assertVisible: "Activities"
+- takeScreenshot: "04-activities-tab"
+
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- assertVisible: "Your Moais|Moais"
+- takeScreenshot: "05-moais-tab"
+
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: 
+    text: "E2E Test User|${REGULAR_USER_EMAIL}"
+- takeScreenshot: "06-profile-tab"
+
+# Test 5: Session Persistence Test
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+- takeScreenshot: "07-session-persisted"
+
+# Test 6: Logout Functionality
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Sign Out|Logout|Settings"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+- takeScreenshot: "08-logout-successful"
+
+# Test 7: Login with Coach User
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "${COACH_USER_EMAIL}"
+- tapOn: 
+    text: "Enter your password|Password"
+- inputText: "${COACH_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+
+# Verify coach user profile
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: 
+    text: "E2E Test Coach|${COACH_USER_EMAIL}"
+- takeScreenshot: "09-coach-user-profile"
+
+# Test 8: Logout and Login with Member User
+- scroll
+- tapOn:
+    text: "Sign Out|Logout|Settings"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+
+- tapOn: 
+    text: "Enter your email|Email"
+- inputText: "${MEMBER_USER_EMAIL}"
+- tapOn: 
+    text: "Enter your password|Password"
+- inputText: "${MEMBER_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+- assertVisible: "Activities|Moais|Profile"
+
+# Verify member user profile
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- assertVisible: 
+    text: "E2E Test Member|${MEMBER_USER_EMAIL}"
+- takeScreenshot: "10-member-user-profile"
+
+# Test 9: Final Logout
+- scroll
+- tapOn:
+    text: "Sign Out|Logout|Settings"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back|Sign In"
+- takeScreenshot: "11-final-logout"
+
+# Test completed successfully
+- takeScreenshot: "12-auth-tests-completed"

@@ -1,0 +1,153 @@
+# Comprehensive Moais Feature Test
+appId: com.moai.native
+env:
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Setup - Login with test user who has seeded moais
+- launchApp
+- waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Sign In|Welcome Back"
+    commands:
+      - tapOn: 
+          text: "Enter your email|Email"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: 
+          text: "Enter your password|Password"
+      - inputText: "${TEST_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      - waitForAnimationToEnd
+
+# Test 1: Navigate to Moais Tab
+- tapOn: "Moais"
+- waitForAnimationToEnd
+- assertVisible: 
+    text: "Your Moais|Moais"
+- takeScreenshot: "moais-01-main-screen"
+
+# Test 2: Verify seeded moais are displayed
+- assertVisible:
+    text: "Your Communities|Your Moais"
+    timeout: 5000
+- assertVisible:
+    text: "Morning Runners|Strength Training"
+    timeout: 5000
+- takeScreenshot: "moais-02-user-moais"
+
+# Test 3: Test Search Functionality
+- tapOn:
+    id: "search-icon"
+    text: "Search"
+- waitForAnimationToEnd
+- assertVisible: "Search moais..."
+- inputText: "Morning"
+- assertVisible: "Morning Runners"
+- takeScreenshot: "moais-03-search-results"
+
+# Clear search
+- clearText
+- hideKeyboard
+
+# Test 4: Test Featured Moais Section
+- scroll
+- assertVisible:
+    text: "Featured Moais"
+    timeout: 5000
+- assertVisible:
+    text: "Yoga & Mindfulness"
+    timeout: 5000
+- takeScreenshot: "moais-04-featured-moais"
+
+# Test 5: Test Moai Card Interaction
+- tapOn:
+    text: "Morning Runners"
+- waitForAnimationToEnd
+# Should navigate to moai details or show interaction
+- runFlow:
+    when:
+      visible:
+        text: "Members|Details|Join|Leave"
+    commands:
+      - takeScreenshot: "moais-05-moai-details"
+      - tapOn:
+          text: "Back|Close"
+      - waitForAnimationToEnd
+
+# Test 6: Test Join Moai Functionality
+- scroll
+- runFlow:
+    when:
+      visible: "Join"
+    commands:
+      - tapOn: "Join"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Joined|Welcome|Success"
+          timeout: 5000
+      - takeScreenshot: "moais-06-join-success"
+
+# Test 7: Test Create Moai Button
+- tapOn:
+    text: "Create Moai"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Name|Title|Create"
+    commands:
+      - takeScreenshot: "moais-07-create-moai"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 8: Test Filter Functionality
+- runFlow:
+    when:
+      visible: "Filter"
+    commands:
+      - tapOn: "Filter"
+      - waitForAnimationToEnd
+      - assertVisible:
+          text: "Category|Type|Location"
+          timeout: 3000
+      - takeScreenshot: "moais-08-filters"
+      - tapOn:
+          text: "Close|Cancel|Done"
+      - waitForAnimationToEnd
+
+# Test 9: Test Explore Button
+- tapOn:
+    text: "Explore"
+- waitForAnimationToEnd
+- assertVisible:
+    text: "Featured|Recommended|All Moais"
+    timeout: 5000
+- takeScreenshot: "moais-09-explore"
+
+# Test 10: Test Pull to Refresh
+- scrollUp
+- pullToRefresh
+- waitForAnimationToEnd
+- assertVisible: "Your Moais"
+- takeScreenshot: "moais-10-refreshed"
+
+# Test 11: Test Member Count and Stats
+- assertVisible:
+    text: "members|participants"
+    timeout: 5000
+- assertVisible:
+    text: "Fitness|Cardio|Strength"
+    timeout: 5000
+
+# Test 12: Test Moai Categories
+- assertVisible:
+    text: "fitness|wellness|outdoor"
+    timeout: 5000
+
+# Verify all main functionality works
+- assertVisible: "Your Moais"
+- takeScreenshot: "moais-11-test-completed"

@@ -1,0 +1,48 @@
+# Navigation Test - Tab Navigation
+appId: com.moai.native
+---
+# Start app
+- launchApp
+- assertVisible: 
+    text: "Activities|Moais|Profile"
+    timeout: 10000
+
+# Test Activities tab
+- tapOn: "Activities"
+- assertVisible: "Activities"
+- assertVisible:
+    text: "Weekly Progress|Recent Activities"
+    timeout: 5000
+
+# Test Moais tab  
+- tapOn: "Moais"
+- assertVisible: "Moais"
+- assertVisible:
+    text: "Featured|Search|Browse"
+    timeout: 5000
+
+# Test Profile tab
+- tapOn: "Profile" 
+- assertVisible: "Profile"
+- assertVisible:
+    text: "Sign In|Settings"
+    timeout: 5000
+
+# Test rapid tab switching
+- tapOn: "Activities"
+- assertVisible: "Activities"
+- tapOn: "Moais"
+- assertVisible: "Moais"
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- tapOn: "Activities"
+- assertVisible: "Activities"
+
+# Verify tab state persistence
+- tapOn: "Moais"
+- scrollDown
+- tapOn: "Activities"
+- tapOn: "Moais"
+# Should maintain scroll position or at least show content properly
+
+- assertVisible: "Moais"

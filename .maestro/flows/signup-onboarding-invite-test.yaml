@@ -1,0 +1,423 @@
+appId: com.moai.native
+env:
+  TEST_USERNAME: "e2etestuser2025"
+  TEST_FIRST_NAME: "E2E"
+  TEST_LAST_NAME: "TestUser"
+  TEST_EMAIL: "e2etest2025@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+  INVALID_INVITE_CODE: "INVALID123"
+  # Note: Replace with a real invite code if testing invite functionality
+  VALID_INVITE_CODE: "TESTINVITE123"
+
+---
+# Comprehensive Signup, Onboarding, and Invite Functionality Test
+
+# Test 1: App Launch and Navigate to Signup
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back"
+- assertVisible: "Sign Up"
+- takeScreenshot: "01-signin-screen"
+
+# Navigate to signup screen
+- tapOn: "Sign Up"
+- waitForAnimationToEnd
+- assertVisible: "Join Moai"
+- assertVisible: "Create your account to get started"
+- takeScreenshot: "01-signup-screen"
+
+# Test 2: Username Validation Testing
+- assertVisible: "Username"
+- tapOn:
+    text: "username"
+- inputText: "ab"
+- waitForAnimationToEnd
+- assertVisible: "Username must be at least 3 characters"
+- takeScreenshot: "02-username-too-short"
+
+# Clear and test invalid characters
+- longPressOn:
+    text: "ab"
+- tapOn: "Select All"
+- inputText: "test user!"
+- waitForAnimationToEnd
+- assertVisible: "Username can only contain letters, numbers, and underscores"
+- takeScreenshot: "02-username-invalid-chars"
+
+# Test valid username
+- longPressOn:
+    text: "test user!"
+- tapOn: "Select All"
+- inputText: "${TEST_USERNAME}"
+- waitForAnimationToEnd
+# Wait for username availability check  
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "✓"
+    commands:
+      - takeScreenshot: "02-username-available"
+
+# Test 3: Fill in Email (No First/Last Name in signup)
+- tapOn:
+    text: "Enter your email"
+- inputText: "${TEST_EMAIL}"
+
+# Test 4: Invite Code Testing (Optional)
+- scroll
+- assertVisible: "Invite Code (Optional)"
+- takeScreenshot: "03-invite-code-field"
+
+# Test invalid invite code
+- tapOn:
+    text: "Enter invite code"
+- inputText: "${INVALID_INVITE_CODE}"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible: "❌"
+    commands:
+      - takeScreenshot: "03-invalid-invite-code"
+
+# Clear invalid invite code for now (test with valid code if available)
+- longPressOn:
+    text: "${INVALID_INVITE_CODE}"
+- tapOn: "Select All"
+- inputText: ""
+
+# Test 5: Password Validation
+- tapOn:
+    text: "Create a password"
+- inputText: "123"
+- tapOn:
+    text: "Confirm your password"
+- inputText: "456"
+- hideKeyboard
+
+# Try to submit with mismatched passwords
+- tapOn: "Create Account"
+- waitForAnimationToEnd
+- assertVisible: "Passwords do not match"
+- takeScreenshot: "04-password-mismatch"
+
+# Fix passwords
+- tapOn:
+    text: "Create a password"
+- longPressOn:
+    text: "123"
+- tapOn: "Select All"
+- inputText: "${TEST_PASSWORD}"
+
+- tapOn:
+    text: "Confirm your password"
+- longPressOn:
+    text: "456"
+- tapOn: "Select All"
+- inputText: "${TEST_PASSWORD}"
+
+# Test password visibility toggle
+- tapOn:
+    id: "password-visibility-toggle"
+    optional: true
+- takeScreenshot: "04-password-visibility"
+
+# Test 6: Complete Signup
+- hideKeyboard
+- takeScreenshot: "05-signup-form-complete"
+- tapOn: "Create Account"
+- waitForAnimationToEnd
+
+# Should show email verification message
+- runFlow:
+    when:
+      visible: 
+        text: "Account Created|Welcome to Moai"
+    commands:
+      - takeScreenshot: "05-signup-success"
+      - tapOn: "OK"
+      - waitForAnimationToEnd
+
+# Should be redirected to login screen
+- assertVisible: "Welcome Back"
+- takeScreenshot: "06-back-to-signin"
+
+# Test 7: Login with New Account (Simulate Email Verification)
+- tapOn:
+    text: "Enter your email"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    text: "Enter your password"
+- inputText: "${TEST_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# Should be redirected to onboarding since profile is incomplete
+- runFlow:
+    when:
+      visible:
+        text: "Loading onboarding|Checking profile"
+    commands:
+      - waitForAnimationToEnd
+
+# Test 8: Onboarding Flow - Step 1: Personal Info (Identity)
+- runFlow:
+    when:
+      visible:
+        text: "Tell us about yourself|Personal Information|Identity"
+    commands:
+      - takeScreenshot: "07-onboarding-step1-identity"
+      - assertVisible: "First Name"
+      - assertVisible: "Last Name"
+      
+      # Fill in First and Last Name (now collected during onboarding)
+      - tapOn:
+          text: "First Name"
+      - inputText: "${TEST_FIRST_NAME}"
+      - tapOn:
+          text: "Last Name"
+      - inputText: "${TEST_LAST_NAME}"
+      
+      # Fill additional fields if present
+      - runFlow:
+          when:
+            visible:
+              text: "Birth Date|Age"
+          commands:
+            - tapOn:
+                text: "Birth Date|Enter your birth date"
+            - inputText: "01/01/1990"
+      
+      - runFlow:
+          when:
+            visible:
+              text: "Phone Number"
+          commands:
+            - tapOn:
+                text: "Enter your phone number"
+            - inputText: "+1234567890"
+      
+      - hideKeyboard
+      - takeScreenshot: "07-identity-complete"
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 9: Onboarding Flow - Step 2: Goal Setting (Goals)
+- runFlow:
+    when:
+      visible:
+        text: "Fitness Goals|What are your fitness goals|Goals"
+    commands:
+      - takeScreenshot: "08-onboarding-step2-goals"
+      - assertVisible: "Feel more in control"
+      - assertVisible: "Get stronger"
+      - assertVisible: "Lose weight"
+      - assertVisible: "Build muscle"
+      
+      # Select multiple goals
+      - tapOn: "Feel more in control"
+      - waitForAnimationToEnd
+      - tapOn: "Get stronger"
+      - waitForAnimationToEnd
+      - tapOn: "Build muscle"
+      - waitForAnimationToEnd
+      - takeScreenshot: "08-goals-selected"
+      
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 10: Onboarding Flow - Step 3: Movement Activities (Movement)
+- runFlow:
+    when:
+      visible:
+        text: "Current Movement Snapshot|How often do you do these activities|Movement"
+    commands:
+      - takeScreenshot: "09-onboarding-step3-movement"
+      - assertVisible: "Strength Training"
+      - assertVisible: "Cardio/Aerobic"
+      - assertVisible: "Yoga/Stretching"
+      
+      # Select and set frequency for activities
+      - tapOn: "Strength Training"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "+"
+          commands:
+            - tapOn: "+"
+            - waitForAnimationToEnd
+            - tapOn: "+"
+            - waitForAnimationToEnd
+      
+      - tapOn: "Cardio/Aerobic"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "+"
+          commands:
+            - tapOn: "+"
+            - waitForAnimationToEnd
+      
+      - takeScreenshot: "09-movement-activities-selected"
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 11: Onboarding Flow - Step 4: Equipment Access (Access)
+- runFlow:
+    when:
+      visible:
+        text: "Equipment & Constraints|What equipment|Access"
+    commands:
+      - takeScreenshot: "10-onboarding-step4-access"
+      - assertVisible: "Home Gym"
+      - assertVisible: "Bodyweight Only"
+      - assertVisible: "Gym/Fitness Center"
+      - assertVisible: "Outdoor Space"
+      
+      # Select equipment options
+      - tapOn: "Bodyweight Only"
+      - waitForAnimationToEnd
+      - tapOn: "Basic Equipment"
+      - waitForAnimationToEnd
+      - tapOn: "Outdoor Space"
+      - waitForAnimationToEnd
+      - takeScreenshot: "10-equipment-access-selected"
+      
+      # Fill limitations if field exists
+      - runFlow:
+          when:
+            visible:
+              text: "Physical limitations|Injuries or limitations"
+          commands:
+            - tapOn:
+                text: "e.g., knee injury, back pain"
+            - inputText: "Minor knee discomfort"
+            - hideKeyboard
+      
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 12: Onboarding Flow - Step 5: Weekly Commitment (Commitment)
+- runFlow:
+    when:
+      visible:
+        text: "Weekly Commitment|How many days per week|Commitment"
+    commands:
+      - takeScreenshot: "11-onboarding-step5-commitment"
+      - assertVisible: "3 days/week"
+      - assertVisible: "30 minutes"
+      
+      # Select commitment level
+      - tapOn: "3 days/week"
+      - waitForAnimationToEnd
+      - scroll
+      - tapOn: "30 minutes"
+      - waitForAnimationToEnd
+      
+      # Select preferred days and times
+      - scroll
+      - runFlow:
+          when:
+            visible: "Mon"
+          commands:
+            - tapOn: "Mon"
+            - tapOn: "Wed"
+            - tapOn: "Fri"
+            - takeScreenshot: "11-days-selected"
+      
+      - scroll
+      - runFlow:
+          when:
+            visible: "Morning"
+          commands:
+            - tapOn: "Morning"
+            - takeScreenshot: "11-time-selected"
+      
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 13: Onboarding Flow - Step 6: Moai Setup (Final Step)
+- runFlow:
+    when:
+      visible:
+        text: "Join the Moai Community|Moai Setup|Ready to Connect"
+    commands:
+      - takeScreenshot: "12-onboarding-step6-moai-setup"
+      - assertVisible: "Create a Moai"
+      - assertVisible: "Join a Moai"
+      - assertVisible: "Skip for Now"
+      
+      # Test each option briefly
+      - tapOn: "Create a Moai"
+      - waitForAnimationToEnd
+      - takeScreenshot: "12-create-moai-selected"
+      
+      - tapOn: "Join a Moai"
+      - waitForAnimationToEnd
+      - takeScreenshot: "12-join-moai-selected"
+      
+      - tapOn: "Skip for Now"
+      - waitForAnimationToEnd
+      - takeScreenshot: "12-skip-for-now-selected"
+      
+      - tapOn: "Complete Onboarding|Finish|Get Started"
+      - waitForAnimationToEnd
+
+# Test 14: Onboarding Completion and Redirect
+- runFlow:
+    when:
+      visible:
+        text: "Welcome to Moai|Let's start your fitness journey|Onboarding Complete"
+    commands:
+      - takeScreenshot: "13-onboarding-completion-screen"
+      - runFlow:
+          when:
+            visible: "Get Started|Continue|Enter App"
+          commands:
+            - tapOn: "Get Started|Continue|Enter App"
+            - waitForAnimationToEnd
+
+# Test 15: Verify Navigation to Main App
+- runFlow:
+    when:
+      visible:
+        text: "Activities|Home|Profile"
+    commands:
+      - takeScreenshot: "14-main-app-loaded"
+      - assertVisible: "Activities"
+      - assertVisible: "Profile"
+      
+      # Verify user is logged in and profile is complete
+      - tapOn: "Profile"
+      - waitForAnimationToEnd
+      - assertVisible: "${TEST_FIRST_NAME}"
+      - assertVisible: "${TEST_LAST_NAME}"
+      - takeScreenshot: "14-profile-complete-with-names"
+
+# Test 16: Navigation Guard Testing
+# Try to go back to auth screens (should be blocked)
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+
+# Should go directly to main app (session persistence)
+- runFlow:
+    when:
+      visible:
+        text: "Activities|Home"
+    commands:
+      - takeScreenshot: "15-session-persisted"
+      - assertVisible: "Profile"
+
+# Test 17: Final Cleanup - Logout
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Sign Out|Logout"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back"
+- takeScreenshot: "16-logout-complete"
+
+# Test completed successfully
+- takeScreenshot: "17-signup-onboarding-test-completed"

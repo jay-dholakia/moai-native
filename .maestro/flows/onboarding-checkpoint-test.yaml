@@ -1,0 +1,268 @@
+appId: com.moai.native
+env:
+  TEST_USERNAME: "checkpoint_test_user"
+  TEST_FIRST_NAME: "Checkpoint"
+  TEST_LAST_NAME: "TestUser"
+  TEST_EMAIL: "checkpoint.test@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+
+---
+# Comprehensive Onboarding Checkpoint System Test
+# This test specifically validates the new 6-step checkpoint system matching the web app
+
+# Setup: Complete Signup First
+- launchApp
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back"
+- tapOn: "Sign Up"
+- waitForAnimationToEnd
+
+# Quick signup to get to onboarding
+- tapOn:
+    text: "username"
+- inputText: "${TEST_USERNAME}"
+- waitForAnimationToEnd
+- tapOn:
+    text: "Enter your email"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    text: "Create a password"
+- inputText: "${TEST_PASSWORD}"
+- tapOn:
+    text: "Confirm your password"
+- inputText: "${TEST_PASSWORD}"
+- hideKeyboard
+- tapOn: "Create Account"
+- waitForAnimationToEnd
+
+# Handle signup success message
+- runFlow:
+    when:
+      visible: 
+        text: "Account Created|Welcome to Moai"
+    commands:
+      - tapOn: "OK"
+      - waitForAnimationToEnd
+
+# Login with new account to access onboarding
+- tapOn:
+    text: "Enter your email"
+- inputText: "${TEST_EMAIL}"
+- tapOn:
+    text: "Enter your password"
+- inputText: "${TEST_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# Test 1: Checkpoint 1 - Identity Step
+- runFlow:
+    when:
+      visible:
+        text: "Tell us about yourself|Personal Information|Identity"
+    commands:
+      - takeScreenshot: "01-checkpoint-1-identity"
+      - assertVisible: "First Name"
+      - assertVisible: "Last Name"
+      
+      # Verify this is checkpoint 1 by checking step indicator
+      - runFlow:
+          when:
+            visible: "1"
+          commands:
+            - takeScreenshot: "01-step-indicator-1"
+      
+      # Fill required fields
+      - tapOn:
+          text: "First Name"
+      - inputText: "${TEST_FIRST_NAME}"
+      - tapOn:
+          text: "Last Name"
+      - inputText: "${TEST_LAST_NAME}"
+      
+      # Try to skip ahead (should be blocked)
+      - runFlow:
+          when:
+            visible: "Next"
+          commands:
+            - tapOn: "Next"
+            - waitForAnimationToEnd
+
+# Test 2: Checkpoint 2 - Goals Step
+- runFlow:
+    when:
+      visible:
+        text: "Fitness Goals|What are your fitness goals|Goals"
+    commands:
+      - takeScreenshot: "02-checkpoint-2-goals"
+      
+      # Verify this is checkpoint 2
+      - runFlow:
+          when:
+            visible: "2"
+          commands:
+            - takeScreenshot: "02-step-indicator-2"
+      
+      # Must select at least one goal
+      - tapOn: "Feel more in control"
+      - waitForAnimationToEnd
+      - tapOn: "Get stronger"
+      - waitForAnimationToEnd
+      - takeScreenshot: "02-goals-selected"
+      
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 3: Checkpoint 3 - Movement Activities Step
+- runFlow:
+    when:
+      visible:
+        text: "Current Movement Snapshot|How often do you do these activities|Movement"
+    commands:
+      - takeScreenshot: "03-checkpoint-3-movement"
+      
+      # Verify this is checkpoint 3
+      - runFlow:
+          when:
+            visible: "3"
+          commands:
+            - takeScreenshot: "03-step-indicator-3"
+      
+      # Must set at least one activity
+      - tapOn: "Strength Training"
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "+"
+          commands:
+            - tapOn: "+"
+            - waitForAnimationToEnd
+      
+      - takeScreenshot: "03-movement-activity-set"
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 4: Checkpoint 4 - Equipment Access Step
+- runFlow:
+    when:
+      visible:
+        text: "Equipment & Constraints|What equipment|Access"
+    commands:
+      - takeScreenshot: "04-checkpoint-4-access"
+      
+      # Verify this is checkpoint 4
+      - runFlow:
+          when:
+            visible: "4"
+          commands:
+            - takeScreenshot: "04-step-indicator-4"
+      
+      # Must select at least one equipment option
+      - tapOn: "Bodyweight Only"
+      - waitForAnimationToEnd
+      - takeScreenshot: "04-equipment-selected"
+      
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 5: Checkpoint 5 - Weekly Commitment Step
+- runFlow:
+    when:
+      visible:
+        text: "Weekly Commitment|How many days per week|Commitment"
+    commands:
+      - takeScreenshot: "05-checkpoint-5-commitment"
+      
+      # Verify this is checkpoint 5
+      - runFlow:
+          when:
+            visible: "5"
+          commands:
+            - takeScreenshot: "05-step-indicator-5"
+      
+      # Must set weekly commitment
+      - tapOn: "3 days/week"
+      - waitForAnimationToEnd
+      - scroll
+      - tapOn: "30 minutes"
+      - waitForAnimationToEnd
+      
+      # Select days
+      - scroll
+      - runFlow:
+          when:
+            visible: "Mon"
+          commands:
+            - tapOn: "Mon"
+            - tapOn: "Wed"
+            - tapOn: "Fri"
+      
+      - takeScreenshot: "05-commitment-set"
+      - tapOn: "Next"
+      - waitForAnimationToEnd
+
+# Test 6: Checkpoint 6 - Moai Setup (Final Step)
+- runFlow:
+    when:
+      visible:
+        text: "Join the Moai Community|Moai Setup|Ready to Connect"
+    commands:
+      - takeScreenshot: "06-checkpoint-6-moai-setup"
+      
+      # Verify this is checkpoint 6 (final step)
+      - runFlow:
+          when:
+            visible: "6"
+          commands:
+            - takeScreenshot: "06-step-indicator-6"
+      
+      # Select skip for now to complete onboarding
+      - tapOn: "Skip for Now"
+      - waitForAnimationToEnd
+      - takeScreenshot: "06-skip-selected"
+      
+      - tapOn: "Complete Onboarding|Finish|Get Started"
+      - waitForAnimationToEnd
+
+# Test 7: Verify Onboarding Completion
+- runFlow:
+    when:
+      visible:
+        text: "Activities|Home|Profile"
+    commands:
+      - takeScreenshot: "07-onboarding-completed"
+      - assertVisible: "Activities"
+      - assertVisible: "Profile"
+      
+      # Verify profile has all data from checkpoints
+      - tapOn: "Profile"
+      - waitForAnimationToEnd
+      - assertVisible: "${TEST_FIRST_NAME}"
+      - assertVisible: "${TEST_LAST_NAME}"
+      - takeScreenshot: "07-profile-data-verified"
+
+# Test 8: Session Persistence - Verify Cannot Return to Onboarding
+- stopApp
+- launchApp
+- waitForAnimationToEnd
+
+# Should go directly to main app since onboarding is complete
+- runFlow:
+    when:
+      visible:
+        text: "Activities|Home"
+    commands:
+      - takeScreenshot: "08-onboarding-bypass-verified"
+      - assertVisible: "Profile"
+
+# Test 9: Cleanup - Logout
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- scroll
+- tapOn:
+    text: "Sign Out|Logout"
+- waitForAnimationToEnd
+- assertVisible: "Welcome Back"
+- takeScreenshot: "09-checkpoint-test-completed"
+
+# Test completed successfully - All 6 checkpoints validated

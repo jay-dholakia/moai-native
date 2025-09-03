@@ -1,0 +1,131 @@
+# Comprehensive Chat Features E2E Test
+appId: com.moai.native
+---
+# Test all chat features: messages, reactions, typing, read receipts
+
+# Setup: Navigate to chat
+- launchApp
+- assertVisible: "Home"
+- tapOn: "Chat"
+- assertVisible: "Chat"
+
+# Test 1: Basic messaging
+- tapOn: 
+    text: ".*Moai.*"
+- assertVisible: "Send a message"
+
+# Send a basic message
+- tapOn: "Send a message"
+- inputText: "Hello everyone! 👋"
+- tapOn: "Send"
+- assertVisible: "Hello everyone! 👋"
+
+# Test 2: Message reactions
+# Long press to reveal reaction options
+- longPressOn: "Hello everyone! 👋"
+- wait: 500
+
+# If reaction button appears, tap it
+- tapOn: "😀"
+- assertVisible: "React to this message"
+
+# Select a reaction
+- tapOn: "👍"
+
+# Verify reaction appears
+- assertVisible: "👍"
+- assertVisible: "1"
+
+# Test 3: Typing indicators
+# Start typing a new message
+- tapOn: "Send a message"
+- inputText: "I am typing a message"
+
+# Wait to simulate typing
+- wait: 2000
+
+# Clear and try again
+- clearText
+- wait: 1000
+
+# Send the message
+- inputText: "Typing indicator test complete"
+- tapOn: "Send"
+- assertVisible: "Typing indicator test complete"
+
+# Test 4: Multiple message types
+# Send an emoji message
+- tapOn: "😊"
+- tapOn: "😂"
+- tapOn: "Send a message"
+- inputText: "😂"
+- tapOn: "Send"
+- assertVisible: "😂"
+
+# Send a longer message
+- tapOn: "Send a message"
+- inputText: "This is a longer message to test how the chat interface handles text wrapping and longer content in the message bubbles."
+- tapOn: "Send"
+- assertVisible: "This is a longer message"
+
+# Test 5: Message interaction
+# Try to react to different messages
+- longPressOn: "Typing indicator test complete"
+- wait: 500
+- tapOn: "😀"
+- tapOn: "❤️"
+- assertVisible: "❤️"
+
+# Test 6: Scroll behavior
+# Scroll up to see older messages
+- swipe:
+    start: 50%, 30%
+    end: 50%, 70%
+
+# Scroll back down
+- swipe:
+    start: 50%, 70%
+    end: 50%, 30%
+
+# Test 7: Message timestamp
+# Long press to see timestamp
+- longPressOn: "😂"
+- wait: 2000 # Timestamp should show and disappear
+
+# Test 8: Chat navigation
+# Test back navigation
+- tapOn: 
+    id: "back-button"
+- assertVisible: "Chat"
+
+# Re-enter chat
+- tapOn: 
+    text: ".*Moai.*"
+- assertVisible: "Send a message"
+
+# Verify messages persist
+- assertVisible: "Hello everyone! 👋"
+- assertVisible: "Typing indicator test complete"
+
+# Test 9: Empty state and edge cases
+# Try sending empty message (should not send)
+- tapOn: "Send a message"
+- tapOn: "Send" # Try to send without text
+# Should still see input focused
+
+# Try sending just spaces
+- inputText: "   "
+- tapOn: "Send" # Should not send
+
+# Send a normal message to finish
+- clearText
+- inputText: "Final test message ✅"
+- tapOn: "Send"
+- assertVisible: "Final test message ✅"
+
+# Test 10: Read receipts verification
+# Check that sent messages show appropriate read indicators
+# (Single check for sent, double check for read)
+
+# Test completed successfully
+- assertVisible: "Send a message"

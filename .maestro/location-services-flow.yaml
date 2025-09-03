@@ -1,0 +1,568 @@
+appId: any
+tags:
+  - location
+  - gyms
+  - routes
+  - checkin
+  - maps
+---
+# Location Services E2E Test
+# Tests the complete location services system including gym finder,
+# route discovery, check-ins, and location-based features
+
+- launchApp
+- assertVisible: "Profile"
+
+# Navigate to Profile tab to access location services
+- tapOn: "Profile"
+- assertVisible: "Profile"
+- assertVisible: "Manage your account and preferences"
+
+# Test Location Services Access
+- runFlow:
+    when:
+      visible: "Location Services"
+    commands:
+      - tapOn: "Location Services"
+      - assertVisible: "Location Services"
+
+# Test Location Permissions
+- runFlow:
+    when:
+      visible: "Enable Location"
+    commands:
+      - tapOn: "Enable Location"
+      - assertVisible: "Location Access Required"
+
+# Test Gym Finder
+- runFlow:
+    when:
+      visible: "Find Gyms"
+    commands:
+      - tapOn: "Find Gyms"
+      - assertVisible: "Find Gyms"
+      
+      # Test location status
+      - runFlow:
+          when:
+            visible: "Searching within"
+          commands:
+            - assertVisible: "Searching within"
+            - assertVisible: "km of your location"
+      
+      # Test filters functionality
+      - tapOn: "options"  # Filter button
+      - assertVisible: "Filters"
+      - assertVisible: "Search Radius"
+      - assertVisible: "Price Range"
+      - assertVisible: "Amenities"
+      - assertVisible: "Minimum Rating"
+      
+      # Test search radius adjustment
+      - tapOn: "add"  # Increase radius
+      - tapOn: "add"  # Increase radius again
+      - assertVisible: "20km"
+      
+      # Test price range filters
+      - tapOn: "Budget ($)"
+      - tapOn: "Moderate ($$)"
+      
+      # Test amenity filters
+      - tapOn: "Parking"
+      - tapOn: "Showers"
+      - tapOn: "Pool"
+      
+      # Test minimum rating
+      - tapOn: "4+"  # 4+ stars
+      
+      # Clear all filters
+      - tapOn: "Clear All"
+      
+      # Test gym search results
+      - runFlow:
+          when:
+            visible: "Found"
+          commands:
+            - assertVisible: "Found"
+            - assertVisible: "gyms near you"
+
+# Test Gym Details and Check-in
+- runFlow:
+    when:
+      visible: "OPEN"  # Open gym
+    commands:
+      # Test gym card information
+      - assertVisible: "OPEN"
+      - assertVisible: "star"  # Rating
+      - assertVisible: "Verified"
+      
+      # Test check-in functionality
+      - tapOn: "Check In"
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+      
+      # Test view details
+      - runFlow:
+          when:
+            visible: "View Details"
+          commands:
+            - tapOn: "View Details"
+            - assertVisible: "Event Organizer"  # Gym details view
+            - assertVisible: "Event Details"
+            - assertVisible: "About This Event"
+
+# Test Route Explorer
+- tapOn: "arrow-back"  # Go back from gym details
+- runFlow:
+    when:
+      visible: "Explore Routes"
+    commands:
+      - tapOn: "Explore Routes"
+      - assertVisible: "Explore Routes"
+      
+      # Test route filters
+      - tapOn: "options"  # Filter button
+      - assertVisible: "Filters"
+      - assertVisible: "Activity Type"
+      - assertVisible: "Difficulty Level"
+      - assertVisible: "Search Radius"
+      - assertVisible: "Featured Routes Only"
+      
+      # Test activity type filters
+      - tapOn: "Running"
+      - tapOn: "Cycling"
+      - tapOn: "Hiking"
+      
+      # Test difficulty filters
+      - tapOn: "Easy"
+      - tapOn: "Moderate"
+      - tapOn: "Hard"
+      
+      # Test featured toggle
+      - tapOn: "Featured Routes Only"
+      
+      # Clear filters
+      - tapOn: "Clear All"
+      
+      # Test route search results
+      - runFlow:
+          when:
+            visible: "Found"
+          commands:
+            - assertVisible: "Found"
+            - assertVisible: "routes near you"
+
+# Test Route Details and Actions
+- runFlow:
+    when:
+      visible: "FEATURED"  # Featured route
+    commands:
+      # Test route card information
+      - assertVisible: "FEATURED"
+      - assertVisible: "star"  # Rating
+      - assertVisible: "completed"  # Usage count
+      
+      # Test difficulty indicators
+      - runFlow:
+          when:
+            visible: "EASY"
+          commands:
+            - assertVisible: "EASY"
+      
+      - runFlow:
+          when:
+            visible: "MODERATE"
+          commands:
+            - assertVisible: "MODERATE"
+      
+      - runFlow:
+          when:
+            visible: "HARD"
+          commands:
+            - assertVisible: "HARD"
+      
+      # Test start route functionality
+      - tapOn: "Start Route"
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+      
+      # Test view route details
+      - runFlow:
+          when:
+            visible: "View Details"
+          commands:
+            - tapOn: "View Details"
+            - assertVisible: "Route Details"
+            - assertVisible: "About This Route"
+
+# Test Create Route (if available)
+- runFlow:
+    when:
+      visible: "add"  # Create route button
+    commands:
+      - tapOn: "add"
+      - assertVisible: "Create Route"
+
+# Test Location Check-in Flow
+- tapOn: "arrow-back"  # Go back from route details
+- runFlow:
+    when:
+      visible: "Check In"
+    commands:
+      - tapOn: "Check In"
+      - assertVisible: "Check In"
+      
+      # Test check-in steps
+      - assertVisible: "Location Type"
+      - assertVisible: "Activity Details"
+      - assertVisible: "Privacy Settings"
+      
+      # Step 1: Location Type
+      - assertVisible: "Where are you working out?"
+      
+      # Test location type selection
+      - tapOn: "Gym"
+      - assertVisible: "checkmark-circle"
+      
+      # Test gym selection
+      - runFlow:
+          when:
+            visible: "Select Gym"
+          commands:
+            - assertVisible: "Select Gym"
+            - runFlow:
+                when:
+                  visible: "away"  # Distance indicator
+                commands:
+                  - tapOn: "away"  # Select a gym
+                  - assertVisible: "checkmark-circle"
+      
+      # Test other location types
+      - tapOn: "Route"
+      - assertVisible: "checkmark-circle"
+      
+      - tapOn: "Outdoor"
+      - assertVisible: "checkmark-circle"
+      - assertVisible: "Current Location:"
+      
+      - tapOn: "Home"
+      - assertVisible: "checkmark-circle"
+      
+      - tapOn: "Other"
+      - assertVisible: "checkmark-circle"
+      
+      # Go to next step
+      - tapOn: "Next"
+      
+      # Step 2: Activity Details
+      - assertVisible: "What's your activity?"
+      
+      # Test activity type selection
+      - tapOn: "Gym Workout"
+      - tapOn: "Cardio"
+      - tapOn: "Strength Training"
+      - tapOn: "Running"
+      - tapOn: "Yoga"
+      
+      # Test notes input
+      - assertVisible: "Add a note (optional)"
+      - inputText: "Great workout session today!"
+      
+      # Test workout completed toggle
+      - assertVisible: "Workout Completed"
+      - tapOn: "Workout Completed"
+      
+      # Go to privacy step
+      - tapOn: "Next"
+      
+      # Step 3: Privacy Settings
+      - assertVisible: "Who can see your check-in?"
+      
+      # Test privacy options
+      - tapOn: "Public"
+      - assertVisible: "checkmark-circle"
+      
+      - tapOn: "Friends"
+      - assertVisible: "checkmark-circle"
+      
+      - tapOn: "Private"
+      - assertVisible: "checkmark-circle"
+      
+      # Select public for test
+      - tapOn: "Public"
+      
+      # Test recent activity display
+      - runFlow:
+          when:
+            visible: "Recent Activity Nearby"
+          commands:
+            - assertVisible: "Recent Activity Nearby"
+      
+      # Complete check-in
+      - tapOn: "Check In"
+      
+      # Should show success
+      - runFlow:
+          when:
+            visible: "Success"
+          commands:
+            - assertVisible: "Success"
+            - tapOn: "OK"
+
+# Test Location-based MOAI Discovery
+- runFlow:
+    when:
+      visible: "Nearby MOAIs"
+    commands:
+      - tapOn: "Nearby MOAIs"
+      - assertVisible: "MOAIs Near You"
+      
+      # Test MOAI discovery results
+      - runFlow:
+          when:
+            visible: "members"
+          commands:
+            - assertVisible: "members"
+            - assertVisible: "away"  # Distance
+
+# Test Location Privacy Settings
+- runFlow:
+    when:
+      visible: "Location Settings"
+    commands:
+      - tapOn: "Location Settings"
+      - assertVisible: "Location Privacy"
+      
+      # Test location sharing toggle
+      - assertVisible: "Share Location"
+      - tapOn: "Share Location"
+      
+      # Test location accuracy settings
+      - assertVisible: "Location Accuracy"
+      - tapOn: "High Accuracy"
+      - tapOn: "Balanced"
+      - tapOn: "Battery Saving"
+
+# Test Gym/Route Favorites (if available)
+- runFlow:
+    when:
+      visible: "heart"  # Favorite icon
+    commands:
+      - tapOn: "heart"
+      - assertVisible: "Added to favorites"
+
+# Test Location Search Functionality
+- runFlow:
+    when:
+      visible: "Search locations..."
+    commands:
+      - assertVisible: "Search locations..."
+      - inputText: "fitness center"
+      
+      # Test search results
+      - runFlow:
+          when:
+            visible: "fitness center"
+          commands:
+            - assertVisible: "fitness center"
+
+# Test Map Integration (if available)
+- runFlow:
+    when:
+      visible: "map"  # Map view button
+    commands:
+      - tapOn: "map"
+      - assertVisible: "Map View"
+      
+      # Test map controls
+      - runFlow:
+          when:
+            visible: "zoom-in"
+          commands:
+            - tapOn: "zoom-in"
+      
+      - runFlow:
+          when:
+            visible: "zoom-out"
+          commands:
+            - tapOn: "zoom-out"
+      
+      # Test location markers
+      - runFlow:
+          when:
+            visible: "location-marker"
+          commands:
+            - tapOn: "location-marker"
+            - assertVisible: "location details"
+
+# Test Distance and Direction Information
+- runFlow:
+    when:
+      visible: "Get Directions"
+    commands:
+      - tapOn: "Get Directions"
+      - assertVisible: "Opening maps..."
+
+# Test Location History (if available)
+- runFlow:
+    when:
+      visible: "Location History"
+    commands:
+      - tapOn: "Location History"
+      - assertVisible: "Recent Check-ins"
+      
+      # Test history items
+      - runFlow:
+          when:
+            visible: "checked in at"
+          commands:
+            - assertVisible: "checked in at"
+            - assertVisible: "ago"  # Time ago
+
+# Test Error Handling
+- runFlow:
+    when:
+      visible: "Failed to load"
+    commands:
+      - assertVisible: "Failed to load"
+      - assertVisible: "Try Again"
+      - tapOn: "Try Again"
+
+# Test Loading States
+- runFlow:
+    when:
+      visible: "Getting your location..."
+    commands:
+      - assertVisible: "Getting your location..."
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Finding gyms near you..."
+    commands:
+      - assertVisible: "Finding gyms near you..."
+      - waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Finding routes near you..."
+    commands:
+      - assertVisible: "Finding routes near you..."
+      - waitForAnimationToEnd
+
+# Test Empty States
+- runFlow:
+    when:
+      visible: "No gyms found"
+    commands:
+      - assertVisible: "No gyms found"
+      - assertVisible: "Try adjusting your search"
+
+- runFlow:
+    when:
+      visible: "No routes found"
+    commands:
+      - assertVisible: "No routes found"
+      - assertVisible: "Create Your First Route"
+
+- runFlow:
+    when:
+      visible: "No recent activity"
+    commands:
+      - assertVisible: "No recent activity"
+
+# Test Location Permissions Denied
+- runFlow:
+    when:
+      visible: "Location Access Required"
+    commands:
+      - assertVisible: "Location Access Required"
+      - assertVisible: "Enable Location"
+
+# Test Offline Mode (if available)
+- runFlow:
+    when:
+      visible: "Offline Mode"
+    commands:
+      - assertVisible: "Offline Mode"
+      - assertVisible: "Location services unavailable"
+
+# Test Gym Hours and Status
+- runFlow:
+    when:
+      visible: "CLOSED"
+    commands:
+      - assertVisible: "CLOSED"
+
+- runFlow:
+    when:
+      visible: "OPEN"
+    commands:
+      - assertVisible: "OPEN"
+
+# Test Route Difficulty Indicators
+- runFlow:
+    when:
+      visible: "BEGINNER"
+    commands:
+      - assertVisible: "BEGINNER"
+
+- runFlow:
+    when:
+      visible: "INTERMEDIATE"
+    commands:
+      - assertVisible: "INTERMEDIATE"
+
+- runFlow:
+    when:
+      visible: "ADVANCED"
+    commands:
+      - assertVisible: "ADVANCED"
+
+# Test Distance Formatting
+- runFlow:
+    when:
+      visible: "m away"  # Meters
+    commands:
+      - assertVisible: "m away"
+
+- runFlow:
+    when:
+      visible: "km away"  # Kilometers
+    commands:
+      - assertVisible: "km away"
+
+# Final verification - ensure location services are fully functional
+- assertVisible: "Location Services"
+
+# Test navigation back to main app
+- tapOn: "arrow-back"
+- assertVisible: "Profile"
+
+# Verify location services integration with main app
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+
+# Test activity integration with location
+- runFlow:
+    when:
+      visible: "Location"
+    commands:
+      - assertVisible: "Location"
+      - assertVisible: "Check In"
+
+# Test location-based notifications (if available)
+- runFlow:
+    when:
+      visible: "Nearby gym"
+    commands:
+      - assertVisible: "Nearby gym"
+      - assertVisible: "notification"

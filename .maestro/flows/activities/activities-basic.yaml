@@ -1,0 +1,199 @@
+# Comprehensive Activities Feature Test
+appId: com.moai.native
+env:
+  TEST_EMAIL: "e2e-test-user@moai.test"
+  TEST_PASSWORD: "TestPassword123!"
+---
+# Setup - Login with test user who has seeded activities
+- launchApp
+- waitForAnimationToEnd
+
+- runFlow:
+    when:
+      visible: "Sign In|Welcome Back"
+    commands:
+      - tapOn: 
+          text: "Enter your email|Email"
+      - inputText: "${TEST_EMAIL}"
+      - tapOn: 
+          text: "Enter your password|Password"
+      - inputText: "${TEST_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      - waitForAnimationToEnd
+
+# Test 1: Navigate to Activities Tab
+- tapOn: "Activities"
+- waitForAnimationToEnd
+- assertVisible: "Activities"
+- takeScreenshot: "activities-01-main-screen"
+
+# Test 2: Verify Quick Log Section
+- assertVisible:
+    text: "Quick Log"
+    timeout: 5000
+- takeScreenshot: "activities-02-quick-log"
+
+# Test 3: Test Activity Type Buttons
+- assertVisible:
+    text: "Strength Training|🏋️‍♀️"
+    timeout: 5000
+- assertVisible:
+    text: "Cardio|🏃‍♂️"
+    timeout: 5000
+- assertVisible:
+    text: "Yoga|🧘‍♀️"
+    timeout: 5000
+
+# Test 4: Test Activity Type Interaction
+- tapOn:
+    text: "Strength Training|🏋️‍♀️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Log|Start|Record|Details"
+    commands:
+      - takeScreenshot: "activities-03-strength-training"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 5: Test Cardio Activity
+- tapOn:
+    text: "Cardio|🏃‍♂️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Duration|Distance|Log"
+    commands:
+      - takeScreenshot: "activities-04-cardio-log"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 6: Test Recent Activities Section
+- scroll
+- assertVisible:
+    text: "Recent Activities"
+    timeout: 5000
+- takeScreenshot: "activities-05-recent-activities"
+
+# Test 7: Verify seeded activities are displayed
+- runFlow:
+    when:
+      visible:
+        text: "Morning Run|Upper Body|No activities"
+    commands:
+      - assertVisible:
+          text: "Morning Run|Upper Body"
+          timeout: 5000
+      - takeScreenshot: "activities-06-seeded-activities"
+
+# Test 8: Test This Week's Stats Section
+- scroll
+- assertVisible:
+    text: "This Week's Stats"
+    timeout: 5000
+- assertVisible:
+    text: "Workouts"
+    timeout: 3000
+- assertVisible:
+    text: "Minutes"
+    timeout: 3000
+- assertVisible:
+    text: "Calories"
+    timeout: 3000
+- takeScreenshot: "activities-07-weekly-stats"
+
+# Test 9: Test Stats Values (should show data from seeded activities)
+- runFlow:
+    when:
+      visible:
+        text: "0"
+    commands:
+      # If stats are 0, it means activities might not be showing
+      - takeScreenshot: "activities-08-zero-stats"
+    else:
+      # If stats show actual numbers
+      - takeScreenshot: "activities-08-actual-stats"
+
+# Test 10: Test Walking Activity Type
+- scrollUp
+- tapOn:
+    text: "Walking|🚶‍♂️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Duration|Steps|Log"
+    commands:
+      - takeScreenshot: "activities-09-walking-log"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 11: Test Cycling Activity Type
+- tapOn:
+    text: "Cycling|🚴‍♀️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Duration|Distance|Log"
+    commands:
+      - takeScreenshot: "activities-10-cycling-log"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 12: Test Swimming Activity Type
+- tapOn:
+    text: "Swimming|🏊‍♂️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Duration|Laps|Log"
+    commands:
+      - takeScreenshot: "activities-11-swimming-log"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 13: Test Yoga Activity Type
+- tapOn:
+    text: "Yoga|🧘‍♀️"
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      visible:
+        text: "Duration|Type|Log"
+    commands:
+      - takeScreenshot: "activities-12-yoga-log"
+      - tapOn:
+          text: "Cancel|Back|Close"
+      - waitForAnimationToEnd
+
+# Test 14: Test Scroll Behavior
+- scroll
+- scroll
+- scrollUp
+- scrollUp
+- takeScreenshot: "activities-13-scroll-test"
+
+# Test 15: Test Empty State (if applicable)
+- runFlow:
+    when:
+      visible: "No activities logged yet"
+    commands:
+      - assertVisible: "No activities logged yet"
+      - assertVisible:
+          text: "Start by logging your first workout"
+          timeout: 3000
+      - takeScreenshot: "activities-14-empty-state"
+
+# Verify main functionality
+- assertVisible: "Activities"
+- takeScreenshot: "activities-15-test-completed"

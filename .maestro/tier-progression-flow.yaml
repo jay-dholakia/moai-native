@@ -1,0 +1,164 @@
+appId: any
+tags:
+  - tier-system
+  - gamification
+  - activities
+---
+# Tier Progression Flow E2E Test
+# Tests that users progress through tiers (Bronze -> Silver -> Gold -> Elite)
+# based on weekly activity consistency and see celebration modals
+
+- launchApp
+- assertVisible: "Activities"
+
+# Navigate to Activities tab
+- tapOn: "Activities"
+- assertVisible: "Your Activities"
+- assertVisible: "Your Tier Progress"
+
+# Check initial tier state (should be Bronze with minimal progress)
+- assertVisible: "BRONZE"
+- assertVisible: "This week:"
+
+# Test tier progress display
+- scrollDown
+- assertVisible: "Your Badges"
+
+# Navigate to a hypothetical profile or tier dashboard
+# (This would need to be implemented - for now we'll test the activities screen)
+
+# Log activities consistently for multiple weeks to progress through tiers
+# Week 1: Log 3+ activities to meet Bronze tier requirement
+- tapOn: 
+    id: "add"  # Quick log button
+- assertVisible: "Quick Log Activity"
+
+# Log first activity of the week
+- tapOn: "💪"  # Workout
+- clearText
+- inputText: "45"
+- tapOn: "Log Activity"
+- assertVisible: "Your Activities"
+
+# Log second activity
+- tapOn: 
+    id: "add"
+- tapOn: "🏃‍♂️"  # Running
+- tapOn: "Log Activity"
+- assertVisible: "Your Activities"
+
+# Log third activity to meet weekly minimum
+- tapOn: 
+    id: "add"
+- tapOn: "🚴‍♂️"  # Cycling
+- clearText
+- inputText: "30"
+- tapOn: "Log Activity"
+- assertVisible: "Your Activities"
+
+# Check that tier progress shows completion for the week
+- assertVisible: "Your Tier Progress"
+- assertVisible: "This week:"
+
+# Continue logging activities to reach Silver tier (4+ activities for 2 weeks)
+# Week 1: Add one more activity
+- tapOn: 
+    id: "add"
+- tapOn: "🏊‍♂️"  # Swimming
+- tapOn: "Log Activity"
+
+# Verify tier progress updates
+- assertVisible: "Your Tier Progress"
+
+# Test tier progression over time (simulating consistent weekly activity)
+# In a real test, this would involve time manipulation or database seeding
+# For now, we'll test the UI components are working
+
+# Simulate weeks of activity by logging many activities
+# This should eventually trigger tier promotion celebrations
+- repeatOnCondition:
+    while:
+      not:
+        visible: "🎉 Tier Promotion!"
+    max: 20  # Safety limit
+    commands:
+      - tapOn: 
+          id: "add"
+      - tapOn: "🧘‍♀️"  # Yoga
+      - tapOn: "Log Activity"
+      - waitForAnimationToEnd
+
+# Should see tier celebration modal after enough consistent activity
+- assertVisible: "🎉 Tier Promotion!"
+- assertVisible: "Congratulations on your consistency!"
+
+# Test celebration modal interactions
+- assertVisible: "FROM"
+- assertVisible: "TO"  # Should show new tier
+
+# Continue through celebration
+- tapOn: "Continue"
+- assertVisible: "Your Activities"
+
+# Verify tier was updated
+- assertVisible: "Your Tier Progress"
+
+# Test tier badge display
+- scrollUp
+- assertVisible: "Your Tier Progress"
+
+# Test that tier celebrations work for multiple promotions
+# Continue logging activities for higher tiers
+- repeatOnCondition:
+    while:
+      not:
+        visible: "GOLD"
+    max: 30
+    commands:
+      - tapOn: 
+          id: "add"
+      - tapOn: "🚶‍♂️"  # Walking
+      - tapOn: "Log Activity"
+      - waitForAnimationToEnd
+      # Check if celebration appeared
+      - runFlow:
+          when:
+            visible: "🎉 Tier Promotion!"
+          commands:
+            - tapOn: "Continue"
+
+# Verify Gold tier achievement
+- assertVisible: "GOLD"
+
+# Test tier system integration with badge system
+- assertVisible: "Your Badges"
+- tapOn: "View All"
+- assertVisible: "My Badges"
+
+# Should show tier-related progress
+- assertVisible: "Badge Progress"
+- tapOn:
+    id: "arrow-back"
+
+# Test streak display (part of tier system)
+- assertVisible: "Your Tier Progress"
+
+# Final verification - ensure all tier components work together
+- scrollDown
+- assertVisible: "Your Activities"
+- assertVisible: "Your Tier Progress"
+- assertVisible: "Your Badges"
+
+# Test edge cases
+# Try logging activity when already at high tier
+- tapOn: 
+    id: "add"
+- tapOn: "Custom Activity"
+- inputText: "hiking"
+- tapOn: "Emoji"
+- inputText: "🥾"
+- tapOn: "Log Activity"
+- assertVisible: "Your Activities"
+
+# Verify tier progress still updates correctly
+- assertVisible: "Your Tier Progress"

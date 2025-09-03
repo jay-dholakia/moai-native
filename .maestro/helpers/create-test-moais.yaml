@@ -1,0 +1,105 @@
+appId: com.moai.native
+env:
+  # Test User Credentials
+  TEST_USER_EMAIL: "e2e-test-user@moai.test"
+  TEST_USER_PASSWORD: "TestPassword123!"
+  
+  # Test Moai Data
+  MOAI_1_NAME: "Morning Runners"
+  MOAI_1_DESC: "Early morning running group for all levels"
+  MOAI_1_TYPE: "Cardio"
+  
+  MOAI_2_NAME: "Strength Training Club"
+  MOAI_2_DESC: "Build strength together with guided workouts"
+  MOAI_2_TYPE: "Strength"
+  
+  MOAI_3_NAME: "Yoga & Mindfulness"
+  MOAI_3_DESC: "Daily yoga practice and meditation sessions"
+  MOAI_3_TYPE: "Yoga"
+---
+# Create Test Moais Helper
+# This flow creates test moais for comprehensive testing
+
+# Login as test user
+- tapOn: "Enter your email"
+- inputText: "${TEST_USER_EMAIL}"
+- tapOn: "Enter your password"
+- inputText: "${TEST_USER_PASSWORD}"
+- hideKeyboard
+- tapOn: "Sign In"
+- waitForAnimationToEnd
+
+# Navigate to Moais tab
+- tapOn: "Moais"
+- waitForAnimationToEnd
+
+# Create First Moai - Morning Runners
+- tapOn: "Create Moai"
+- assertVisible: "Create New Moai"
+
+- tapOn: "Moai Name"
+- inputText: "${MOAI_1_NAME}"
+- tapOn: "Description"
+- inputText: "${MOAI_1_DESC}"
+- tapOn: "Select Type"
+- tapOn: "${MOAI_1_TYPE}"
+- tapOn: "Public"
+- tapOn: "Max Members"
+- clearText
+- inputText: "20"
+- hideKeyboard
+- tapOn: "Create"
+- waitForAnimationToEnd
+- assertVisible: "${MOAI_1_NAME}"
+
+# Go back to Moais list
+- tapOn: "Back"
+
+# Create Second Moai - Strength Training Club
+- tapOn: "Create Moai"
+- assertVisible: "Create New Moai"
+
+- tapOn: "Moai Name"
+- inputText: "${MOAI_2_NAME}"
+- tapOn: "Description"
+- inputText: "${MOAI_2_DESC}"
+- tapOn: "Select Type"
+- tapOn: "${MOAI_2_TYPE}"
+- tapOn: "Public"
+- tapOn: "Max Members"
+- clearText
+- inputText: "15"
+- hideKeyboard
+- tapOn: "Create"
+- waitForAnimationToEnd
+- assertVisible: "${MOAI_2_NAME}"
+
+# Go back to Moais list
+- tapOn: "Back"
+
+# Create Third Moai - Yoga & Mindfulness
+- tapOn: "Create Moai"
+- assertVisible: "Create New Moai"
+
+- tapOn: "Moai Name"
+- inputText: "${MOAI_3_NAME}"
+- tapOn: "Description"
+- inputText: "${MOAI_3_DESC}"
+- tapOn: "Select Type"
+- tapOn: "${MOAI_3_TYPE}"
+- tapOn: "Public"
+- tapOn: "Max Members"
+- clearText
+- inputText: "30"
+- hideKeyboard
+- tapOn: "Create"
+- waitForAnimationToEnd
+- assertVisible: "${MOAI_3_NAME}"
+
+# Verify all moais are created
+- tapOn: "Back"
+- assertVisible: "${MOAI_1_NAME}"
+- assertVisible: "${MOAI_2_NAME}"
+- assertVisible: "${MOAI_3_NAME}"
+
+- takeScreenshot: "test-moais-created"

@@ -1,0 +1,50 @@
+{
+  "users": [
+    {
+      "email": "e2e-test-user@moai.test",
+      "password": "TestPassword123!",
+      "profile": {
+        "first_name": "E2E Test",
+        "last_name": "User",
+        "username": "e2etestuser",
+        "bio": "Automated test user for E2E testing",
+        "profile_image": null
+      },
+      "metadata": {
+        "test_user": true,
+        "created_by": "e2e-test-suite"
+      }
+    },
+    {
+      "email": "e2e-coach@moai.test",
+      "password": "CoachPassword123!",
+      "profile": {
+        "first_name": "E2E Test",
+        "last_name": "Coach",
+        "username": "e2etestcoach",
+        "bio": "Automated test coach for E2E testing",
+        "profile_image": null
+      },
+      "metadata": {
+        "test_user": true,
+        "created_by": "e2e-test-suite",
+        "role": "coach"
+      }
+    },
+    {
+      "email": "e2e-member@moai.test",
+      "password": "MemberPassword123!",
+      "profile": {
+        "first_name": "E2E Test",
+        "last_name": "Member",
+        "username": "e2etestmember",
+        "bio": "Automated test member for E2E testing",
+        "profile_image": null
+      },
+      "metadata": {
+        "test_user": true,
+        "created_by": "e2e-test-suite"
+      }
+    }
+  ]
+}

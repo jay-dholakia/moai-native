@@ -1,0 +1,57 @@
+# Navigation Test - Protected Routes
+appId: com.moai.native
+---
+# Start app in logged out state
+- launchApp
+- tapOn: "Profile"
+
+# Ensure logged out
+- runFlow:
+    when:
+      visible: "Sign Out"
+    commands:
+      - tapOn: "Sign Out"
+      - assertVisible: "Sign In"
+
+# Test protected content access when logged out
+- tapOn: "Activities"
+- assertVisible:
+    text: "Sign In|Login|Please sign in"
+    timeout: 5000
+
+- tapOn: "Moais"  
+- assertVisible:
+    text: "Sign In|Login|Please sign in|Browse available"
+    timeout: 5000
+
+# Test that Profile shows login prompt
+- tapOn: "Profile"
+- assertVisible: "Sign In"
+
+# Test protected route redirect after login
+- tapOn: "Sign In"
+- inputText: "test@moai.com"
+- tapOn: "Password"
+- inputText: "TestPassword123!"
+- tapOn: "Sign In"
+
+# Should redirect to protected content
+- assertVisible:
+    text: "Activities|Dashboard|Welcome"
+    timeout: 10000
+
+# Verify all tabs now work
+- tapOn: "Activities"
+- assertVisible:
+    text: "Weekly Progress|Activities"
+    timeout: 5000
+
+- tapOn: "Moais"
+- assertVisible:
+    text: "Featured|Search"
+    timeout: 5000
+
+- tapOn: "Profile"
+- assertVisible:
+    text: "Sign Out|Profile"
+    timeout: 5000

@@ -1,0 +1,113 @@
+appId: com.moai.native
+env:
+  # Test User Credentials for cleanup
+  TEST_USER_EMAIL: "e2e-test-user@moai.test"
+  TEST_USER_PASSWORD: "TestPassword123!"
+  
+  COACH_USER_EMAIL: "e2e-coach@moai.test"
+  COACH_USER_PASSWORD: "CoachPassword123!"
+  
+  MEMBER_USER_EMAIL: "e2e-member@moai.test"
+  MEMBER_USER_PASSWORD: "MemberPassword123!"
+---
+# Test Data Cleanup Helper
+# This flow cleans up test data after test runs
+# Should be run before test data seeding to ensure clean state
+
+# Ensure we're on login screen
+- launchApp
+- waitForAnimationToEnd
+
+# Try to clean up each test user's data
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      # Login as test user
+      - tapOn: "Enter your email"
+      - inputText: "${TEST_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - inputText: "${TEST_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      
+      # If login successful, delete account
+      - runFlow:
+          when:
+            visible: "Profile"
+          commands:
+            - tapOn: "Profile"
+            - scrollUntilVisible:
+                element: "Settings"
+                direction: DOWN
+            - tapOn: "Settings"
+            - scrollUntilVisible:
+                element: "Delete Account"
+                direction: DOWN
+            - tapOn: "Delete Account"
+            - tapOn: "Confirm Delete"
+            - waitForAnimationToEnd
+
+# Clean up coach user
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      - tapOn: "Enter your email"
+      - clearText
+      - inputText: "${COACH_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - clearText
+      - inputText: "${COACH_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      
+      - runFlow:
+          when:
+            visible: "Profile"
+          commands:
+            - tapOn: "Profile"
+            - scrollUntilVisible:
+                element: "Settings"
+                direction: DOWN
+            - tapOn: "Settings"
+            - scrollUntilVisible:
+                element: "Delete Account"
+                direction: DOWN
+            - tapOn: "Delete Account"
+            - tapOn: "Confirm Delete"
+            - waitForAnimationToEnd
+
+# Clean up member user
+- runFlow:
+    when:
+      visible: "Welcome Back"
+    commands:
+      - tapOn: "Enter your email"
+      - clearText
+      - inputText: "${MEMBER_USER_EMAIL}"
+      - tapOn: "Enter your password"
+      - clearText
+      - inputText: "${MEMBER_USER_PASSWORD}"
+      - hideKeyboard
+      - tapOn: "Sign In"
+      
+      - runFlow:
+          when:
+            visible: "Profile"
+          commands:
+            - tapOn: "Profile"
+            - scrollUntilVisible:
+                element: "Settings"
+                direction: DOWN
+            - tapOn: "Settings"
+            - scrollUntilVisible:
+                element: "Delete Account"
+                direction: DOWN
+            - tapOn: "Delete Account"
+            - tapOn: "Confirm Delete"
+            - waitForAnimationToEnd
+
+# Return to login screen
+- launchApp
+- assertVisible: "Welcome Back"

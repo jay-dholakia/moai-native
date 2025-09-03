@@ -1,0 +1,13 @@
+{
+    "mcpServers": [
+        {
+            "command": "postgres-mcp",
+            "args": [
+                "--access-mode=unrestricted"
+            ],
+            "env": {
+                "DATABASE_URI": "postgresql://postgres:postgres@localhost:54322/postgres"
+            }
+        }
+    ]
+}

@@ -1,0 +1,279 @@
+appId: any
+---
+# Workout Builder E2E Test
+# Tests XState-powered workout builder flow
+
+- launchApp
+
+# Navigate to Workout Builder
+- tapOn: "Workouts"
+- tapOn: "Create Workout"
+- assertVisible: "Create Workout"
+
+# Test Initial Setup State
+- assertVisible: "Workout Details"
+- assertVisible: "Exercise"
+- assertVisible: "0"  # Initial exercise count
+
+# Test Workout Details Input
+- tapOn:
+    id: "workout-name-input"
+- inputText: "My Push Day Workout"
+
+- tapOn:
+    id: "workout-description-input"
+- inputText: "Upper body strength training focusing on chest, shoulders, and triceps"
+
+# Test Workout Settings
+- tapOn:
+    id: "workout-settings"
+- assertVisible: "Workout Settings"
+
+# Test Workout Type Selection
+- tapOn: "Strength"
+- assertVisible: "strength"
+
+# Test Difficulty Selection  
+- tapOn: "Intermediate"
+- assertVisible: "intermediate"
+
+# Add tags
+- tapOn:
+    id: "add-tag-input"
+- inputText: "push"
+- tapOn: "Add Tag"
+- assertVisible: "push"
+
+- inputText: "upper-body"  
+- tapOn: "Add Tag"
+- assertVisible: "upper-body"
+
+- tapOn: "Done"
+
+# Test Adding First Exercise
+- tapOn: "Add Exercise"
+- assertVisible: "Choose Exercise"
+
+# Search and select an exercise
+- tapOn:
+    id: "search-toggle"
+- tapOn:
+    id: "search-input"
+- inputText: "bench press"
+- tapOn:
+    text: "Bench Press"
+    index: 0
+- tapOn: "Select Exercise"
+
+# Test Exercise Configuration State
+- assertVisible: "Configure Exercise"
+- assertVisible: "Bench Press"
+- assertVisible: "Sets"
+- assertVisible: "Reps"
+- assertVisible: "Weight"
+
+# Configure exercise parameters
+- tapOn:
+    id: "sets-input"
+- clearText
+- inputText: "4"
+
+- tapOn:
+    id: "reps-input"
+- clearText  
+- inputText: "8"
+
+- tapOn:
+    id: "weight-input"
+- clearText
+- inputText: "185"
+
+- tapOn:
+    id: "rest-input" 
+- clearText
+- inputText: "120"
+
+- tapOn:
+    id: "notes-input"
+- inputText: "Focus on controlled movement"
+
+# Add exercise to workout
+- tapOn: "Add"
+- assertVisible: "Edit Workout"  # Should transition to editing state
+- assertVisible: "Bench Press"
+- assertVisible: "4 sets × 8 reps @ 185lbs"
+- assertVisible: "1"  # Exercise count updated
+
+# Test Workout Stats Update
+- assertVisible:
+    text: "1"
+    id: "exercise-count"
+- assertVisible:
+    id: "estimated-duration"
+
+# Add Second Exercise
+- tapOn: "Add Exercise"
+- tapOn:
+    text: "Incline Dumbbell Press"
+    index: 0
+- tapOn: "Select Exercise"
+
+# Configure second exercise
+- inputText: "3"  # Sets
+- tapOn:
+    id: "reps-input"
+- inputText: "12"
+- tapOn:
+    id: "weight-input"  
+- inputText: "65"
+
+- tapOn: "Add"
+- assertVisible: "2"  # Exercise count
+
+# Test Exercise Management
+# Test Edit Exercise
+- tapOn:
+    id: "edit-exercise-0"
+- assertVisible: "Configure Exercise"
+- assertVisible: "Bench Press"
+- tapOn:
+    id: "weight-input"
+- clearText
+- inputText: "195"  # Increase weight
+- tapOn: "Add"
+- assertVisible: "195lbs"  # Updated weight
+
+# Test Duplicate Exercise
+- tapOn:
+    id: "duplicate-exercise-1"
+- assertVisible: "3"  # Exercise count increased
+- assertVisible:
+    text: "Incline Dumbbell Press"
+    index: 1  # Duplicate appears
+
+# Test Remove Exercise  
+- tapOn:
+    id: "remove-exercise-2"
+- assertVisible: "2"  # Back to 2 exercises
+
+# Test Exercise Reordering (if implemented)
+- longPressOn:
+    id: "exercise-0"
+    optional: true
+- dragTo:
+    id: "exercise-1"
+    optional: true
+
+# Test Workout Preview State
+- tapOn: "Preview Workout" 
+- assertVisible: "Workout Preview"
+- assertVisible: "My Push Day Workout"
+- assertVisible: "Upper body strength training"
+- assertVisible: "2 exercises"
+- assertVisible: "intermediate"
+- assertVisible: "push"
+- assertVisible: "upper-body"
+
+# Test Preview Exercise Details
+- tapOn:
+    text: "Bench Press"
+- assertVisible: "4 sets × 8 reps @ 195lbs"
+- assertVisible: "Focus on controlled movement"
+- tapOn: "Back"
+
+# Test Save Template State
+- tapOn: "Save Template"  
+- assertVisible: "Saving workout"  # Loading state
+- wait: 2000ms
+- assertVisible: "Workout Saved"  # Success state
+
+# Wait for auto-transition back to editing
+- wait: 3000ms
+- assertVisible: "Edit Workout"
+
+# Test Save and Start State  
+- tapOn: "Save & Start Workout"
+- assertVisible: "Saving workout"
+- wait: 2000ms
+# Should transition to workout execution (not implemented in this test)
+
+# Test Error Handling
+# Try to save empty workout
+- tapOn: "Create Workout"
+- tapOn: "Save Template"
+- assertVisible: "Add at least one exercise"  # Error message
+
+# Test Cancel from Different States
+- tapOn: "Add Exercise"
+- tapOn: "Cancel"
+- assertVisible: "Create Workout"
+
+- tapOn:
+    id: "workout-settings"
+- tapOn: "Cancel"
+- assertVisible: "Create Workout"
+
+# Test Reset Workout
+- tapOn: "Reset"
+- assertVisible: "Are you sure"  # Confirmation dialog
+- tapOn: "Reset"
+- assertVisible: "0"  # Exercise count reset
+- assertVisible: ""   # Name cleared
+
+# Test Load Existing Template
+- tapOn: "Load Template"
+- tapOn:
+    text: "My Push Day Workout"
+    optional: true
+- assertVisible: "Edit Workout"
+- assertVisible: "My Push Day Workout"
+- assertVisible: "2"  # Exercises loaded
+
+# Test Validation
+# Try invalid inputs
+- tapOn: "Add Exercise"
+- tapOn:
+    text: "Bench Press"
+- tapOn: "Select Exercise"
+- tapOn:
+    id: "sets-input"
+- inputText: "-1"  # Invalid sets
+- tapOn: "Add"
+- assertVisible: "Invalid"  # Error message
+
+# Test State Persistence
+- tapOn: "Cancel"
+- tapOn: "Yes"  # Confirm cancel
+- tapOn: "Create Workout"
+# Should start fresh
+- assertVisible: "0"  # Clean state
+
+# Test Complex Workflow
+# Create a complete workout
+- tapOn:
+    id: "workout-name-input"
+- inputText: "Full Body Blast"
+
+# Add 5 different exercises
+- repeat: 3
+  - tapOn: "Add Exercise"
+  - tapOn:
+      index: ${index}
+  - tapOn: "Select Exercise"
+  - inputText: "3"
+  - tapOn:
+      id: "reps-input"
+  - inputText: "10"
+  - tapOn: "Add"
+
+# Verify final state
+- assertVisible: "3"  # Exercise count
+- assertVisible: "Full Body Blast"
+
+# Save final workout
+- tapOn: "Save & Start Workout"
+- wait: 3000ms
+
+# Cleanup
+- tapOn: "Back"
+- assertVisible: "Workouts"
