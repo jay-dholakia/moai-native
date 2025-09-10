@@ -7,6 +7,8 @@ import { format, startOfWeek, endOfWeek, addDays, addWeeks, subWeeks, isSameDay,
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
+import { useWeeklyPlan, useSaveWeeklyPlan } from '@/hooks/use-weekly-plan';
+import type { DayPlan } from '@/services/weekly-plan-service';
 
 interface ActivityCard {
   id: string;
@@ -15,12 +17,13 @@ interface ActivityCard {
   isLocked?: boolean;
 }
 
-interface DayPlan {
-  day: string;
-  date: string;
-  activities: ActivityCard[];
-  isPast: boolean;
-}
+// DayPlan interface now imported from service
+// interface DayPlan {
+//   day: string;
+//   date: string;
+//   activities: ActivityCard[];
+//   isPast: boolean;
+// }
 
 interface WeeklyActivityPlannerProps {
   weekOffset?: number;
@@ -113,6 +116,10 @@ export const WeeklyActivityPlanner: React.FC<WeeklyActivityPlannerProps> = ({
   // Determine which user ID to use for queries
   const targetUserId = userId || user?.id;
 
+  // Use hooks for loading and saving weekly plans
+  const { plan: savedPlan, isLoading: planLoading } = useWeeklyPlan(currentWeek, targetUserId);
+  const { saveWeeklyPlan, isLoading: savingPlan } = useSaveWeeklyPlan();
+
   // Fetch weekly activities
   const { data: weeklyActivities = [] } = useQuery({
     queryKey: ['weeklyActivities', targetUserId, currentWeekOffset], // Use offset instead of Date object
@@ -151,23 +158,34 @@ export const WeeklyActivityPlanner: React.FC<WeeklyActivityPlannerProps> = ({
     return { totalActivities, activeDays, dailyActivities };
   }, [weeklyActivities]);
 
-  // Initialize weekly plan
+  // Initialize weekly plan with saved data or empty plan
   useEffect(() => {
-    const initialPlan = Array.from({ length: 7 }, (_, index) => {
-      const date = addDays(weekStart, index);
-      const dayName = format(date, 'EEE');
-      const isPast = !isToday(date) && isBefore(date, today);
-      
-      return {
-        day: dayName,
-        date: format(date, 'yyyy-MM-dd'),
-        activities: [],
-        isPast
-      };
-    });
+    let initialPlan: DayPlan[];
+    
+    if (savedPlan?.weekly_plan && Array.isArray(savedPlan.weekly_plan)) {
+      // Use saved plan and update isPast status
+      initialPlan = savedPlan.weekly_plan.map(day => ({
+        ...day,
+        isPast: !isToday(new Date(day.date)) && isBefore(new Date(day.date), today)
+      }));
+    } else {
+      // Create empty plan
+      initialPlan = Array.from({ length: 7 }, (_, index) => {
+        const date = addDays(weekStart, index);
+        const dayName = format(date, 'EEE');
+        const isPast = !isToday(date) && isBefore(date, today);
+        
+        return {
+          day: dayName,
+          date: format(date, 'yyyy-MM-dd'),
+          activities: [],
+          isPast
+        };
+      });
+    }
     
     setWeeklyPlan(initialPlan);
-  }, [weekStart, today]); // weekStart and today are now stable memoized values
+  }, [weekStart, today, savedPlan]); // Include savedPlan in dependencies
 
   const handlePreviousWeek = () => {
     if (onWeekChange) {
@@ -238,12 +256,19 @@ export const WeeklyActivityPlanner: React.FC<WeeklyActivityPlannerProps> = ({
   };
 
   const handleSavePlan = () => {
-    // Mock save functionality - in real implementation, this would save to database
-    Alert.alert(
-      'Plan Saved',
-      'Your weekly plan has been saved successfully!',
-      [{ text: 'OK' }]
-    );
+    if (!targetUserId) {
+      Alert.alert('Error', 'You must be logged in to save your plan.');
+      return;
+    }
+
+    const weekStartString = format(weekStart, 'yyyy-MM-dd');
+    
+    saveWeeklyPlan({
+      weekly_plan: weeklyPlan,
+      week_start_date: weekStartString,
+      is_committed: false,
+      plan_update_reason: 'User updated plan'
+    });
   };
 
   // Get today's planned activity
@@ -685,12 +710,16 @@ export const WeeklyActivityPlanner: React.FC<WeeklyActivityPlannerProps> = ({
               <TouchableOpacity
                 style={[
                   tw(spacing.p(3), border.rounded, layout.itemsCenter),
-                  { backgroundColor: colors.primary }
+                  { 
+                    backgroundColor: savingPlan ? colors.muted : colors.primary,
+                    opacity: savingPlan ? 0.6 : 1
+                  }
                 ]}
                 onPress={handleSavePlan}
+                disabled={savingPlan}
               >
                 <Text style={[tw(text.sm, text.medium), { color: colors.primaryForeground }]}>
-                  Save Plan
+                  {savingPlan ? 'Saving...' : 'Save Plan'}
                 </Text>
               </TouchableOpacity>
             </View>

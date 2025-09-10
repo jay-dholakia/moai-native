@@ -80,79 +80,110 @@ export function useChannelMessages(channelId: string | null) {
     }
   }, [channelId]);
 
-  // Subscribe to comprehensive real-time updates
+  // Subscribe to comprehensive real-time updates with stability improvements
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId || !user) return;
 
-    // Clean up previous subscription
-    if (subscriptionRef.current) {
-      subscriptionRef.current.unsubscribe();
-    }
-
-    // Fetch initial messages
-    fetchMessages();
-
-    // Subscribe to all realtime events
-    subscriptionRef.current = ChatService.subscribeToChannelMessages(channelId, {
-      onMessage: (newMessage) => {
-        setMessages(prev => {
-          // Avoid duplicates
-          if (prev.some(msg => msg.id === newMessage.id)) {
-            return prev;
-          }
-          return [...prev, newMessage];
-        });
-        
-        // Auto-mark new message as read if it's not from current user
-        if (user && newMessage.profile_id !== user.id) {
-          setTimeout(() => {
-            ReadReceiptsService.autoMarkAsReadSingle(newMessage.id, newMessage.profile_id);
-          }, 1000); // Delay to simulate "reading"
+    // Add a small delay to prevent rapid subscribe/unsubscribe cycles
+    const subscriptionDelay = setTimeout(() => {
+      // Clean up previous subscription properly
+      if (subscriptionRef.current) {
+        try {
+          subscriptionRef.current.unsubscribe();
+        } catch (error) {
+          console.warn('Error cleaning up previous subscription:', error);
         }
-      },
-      
-      onReaction: (reactionUpdate) => {
-        MessageReactionService.handleReactionUpdate(reactionUpdate.message_id, reactionUpdate);
-        const updatedReactions = MessageReactionService.getCachedReactions(reactionUpdate.message_id);
-        setReactions(prev => ({
-          ...prev,
-          [reactionUpdate.message_id]: updatedReactions
-        }));
-      },
-      
-      onReadReceipt: (receiptUpdate) => {
-        ReadReceiptsService.handleReadReceiptUpdate(receiptUpdate);
-        const updatedReceipts = ReadReceiptsService.getCachedReadReceipts(receiptUpdate.message_id);
-        setReadReceipts(prev => ({
-          ...prev,
-          [receiptUpdate.message_id]: updatedReceipts
-        }));
-      },
-      
-      onTyping: (typingUserIds) => {
-        // Convert string array to TypingUser array using cached data
-        const typingUsersData = channelId ? TypingIndicatorService.getTypingUsers(channelId) : [];
-        setTypingUsers(typingUsersData);
-      },
-      
-      onPresence: (presenceState) => {
-        PresenceService.handlePresenceUpdate(channelId, presenceState);
-        const online = PresenceService.getOnlineUsersForChannel(channelId);
-        setOnlineUsers(online);
-      },
-      
-      onError: (error) => {
-        console.error('Real-time subscription error:', error);
-        setError('Connection error');
+        subscriptionRef.current = null;
       }
-    });
+
+      // Fetch initial messages
+      fetchMessages();
+
+      // Subscribe to all realtime events with improved error handling
+      try {
+        subscriptionRef.current = ChatService.subscribeToChannelMessages(channelId, {
+          onMessage: (newMessage) => {
+            setMessages(prev => {
+              // Avoid duplicates
+              if (prev.some(msg => msg.id === newMessage.id)) {
+                return prev;
+              }
+              return [...prev, newMessage];
+            });
+            
+            // Auto-mark new message as read if it's not from current user
+            if (user && newMessage.profile_id !== user.id) {
+              setTimeout(() => {
+                ReadReceiptsService.autoMarkAsReadSingle(newMessage.id, newMessage.profile_id);
+              }, 1000); // Delay to simulate "reading"
+            }
+          },
+          
+          onReaction: (reactionUpdate) => {
+            MessageReactionService.handleReactionUpdate(reactionUpdate.message_id, reactionUpdate);
+            const updatedReactions = MessageReactionService.getCachedReactions(reactionUpdate.message_id);
+            setReactions(prev => ({
+              ...prev,
+              [reactionUpdate.message_id]: updatedReactions
+            }));
+          },
+          
+          onReadReceipt: (receiptUpdate) => {
+            ReadReceiptsService.handleReadReceiptUpdate(receiptUpdate);
+            const updatedReceipts = ReadReceiptsService.getCachedReadReceipts(receiptUpdate.message_id);
+            setReadReceipts(prev => ({
+              ...prev,
+              [receiptUpdate.message_id]: updatedReceipts
+            }));
+          },
+          
+          onTyping: (typingUserIds) => {
+            // Convert string array to TypingUser array using cached data
+            const typingUsersData = channelId ? TypingIndicatorService.getTypingUsers(channelId) : [];
+            setTypingUsers(typingUsersData);
+          },
+          
+          onPresence: (presenceState) => {
+            PresenceService.handlePresenceUpdate(channelId, presenceState);
+            const online = PresenceService.getOnlineUsersForChannel(channelId);
+            setOnlineUsers(online);
+          },
+          
+          onError: (error) => {
+            console.error('Real-time subscription error:', error);
+            setError(`Connection error: ${error}`);
+            
+            // Attempt to reconnect after a delay if the subscription closed
+            if (error === 'CLOSED' || error === 'CHANNEL_ERROR') {
+              setTimeout(() => {
+                console.log('Attempting to reconnect subscription for channel:', channelId);
+                setError(null);
+                // Re-trigger the effect by clearing and setting the subscription
+                if (subscriptionRef.current) {
+                  subscriptionRef.current = null;
+                }
+              }, 3000);
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Failed to create subscription:', error);
+        setError('Failed to establish connection');
+      }
+    }, 100); // Small delay to prevent rapid re-subscriptions
 
     return () => {
+      clearTimeout(subscriptionDelay);
       if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
+        try {
+          subscriptionRef.current.unsubscribe();
+        } catch (error) {
+          console.warn('Error during subscription cleanup:', error);
+        }
+        subscriptionRef.current = null;
       }
     };
-  }, [channelId, fetchMessages, user]);
+  }, [channelId, user]); // Removed fetchMessages from deps to prevent unnecessary re-subscriptions
 
   // Initialize presence and typing services for channel
   useEffect(() => {

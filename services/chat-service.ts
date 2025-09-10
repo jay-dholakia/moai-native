@@ -92,11 +92,235 @@ function parseChannelIdForMessage(channelId: string): Partial<SendMessageRequest
  * Enhanced Chat service with comprehensive Supabase Realtime and Presence integration
  */
 export class ChatService {
+  // Channel management with reference counting
+  private static activeChannels = new Map<string, {
+    channel: any;
+    refCount: number;
+    callbacks: Set<string>;
+    lastActivity: number;
+  }>();
+  
   // Track active subscriptions to prevent memory leaks
   private static activeSubscriptions = new Map<string, any>();
   
   // Track presence states per channel
   private static presenceStates = new Map<string, any>();
+  
+  // Track connection status per channel
+  private static connectionStatus = new Map<string, 'connecting' | 'connected' | 'disconnected' | 'error'>();
+  private static reconnectAttempts = new Map<string, number>();
+  private static maxReconnectAttempts = 5;
+  private static reconnectDelay = 1000; // Start with 1 second
+  
+  // Callback registry for shared channels
+  private static callbackRegistry = new Map<string, Map<string, any>>();
+  
+  // Heartbeat mechanism
+  private static heartbeatIntervals = new Map<string, NodeJS.Timeout>();
+  private static lastHeartbeat = new Map<string, number>();
+  
+  /**
+   * Broadcast message to all registered callbacks for a channel
+   */
+  private static async broadcastToCallbacks(
+    channelId: string, 
+    callbackType: string, 
+    dataProvider: () => Promise<any>
+  ) {
+    const callbackMap = this.callbackRegistry.get(channelId);
+    if (!callbackMap) return;
+    
+    try {
+      const data = await dataProvider();
+      if (data) {
+        for (const callbacks of callbackMap.values()) {
+          const callback = callbacks[callbackType];
+          if (callback && typeof callback === 'function') {
+            try {
+              callback(data);
+            } catch (error) {
+              console.error(`Error in callback ${callbackType} for channel ${channelId}:`, error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error in data provider for ${callbackType} on channel ${channelId}:`, error);
+    }
+  }
+  
+  /**
+   * Unsubscribe a specific callback from a channel
+   */
+  private static unsubscribeCallback(channelId: string, callbackId: string) {
+    const channelData = this.activeChannels.get(channelId);
+    if (!channelData) return;
+    
+    // Remove callback
+    const callbackMap = this.callbackRegistry.get(channelId);
+    if (callbackMap) {
+      callbackMap.delete(callbackId);
+    }
+    
+    channelData.callbacks.delete(callbackId);
+    channelData.refCount--;
+    
+    console.log(`Unsubscribed callback from ${channelId}, refCount: ${channelData.refCount}`);
+    
+    // If no more callbacks, cleanup the entire channel
+    if (channelData.refCount <= 0) {
+      this.cleanupChannel(channelId);
+    }
+  }
+  
+  /**
+   * Cleanup a channel completely
+   */
+  private static cleanupChannel(channelId: string) {
+    const channelData = this.activeChannels.get(channelId);
+    if (channelData) {
+      try {
+        channelData.channel.unsubscribe();
+      } catch (error) {
+        console.warn(`Error unsubscribing channel ${channelId}:`, error);
+      }
+    }
+    
+    // Clean up all maps
+    this.activeChannels.delete(channelId);
+    this.activeSubscriptions.delete(channelId);
+    this.callbackRegistry.delete(channelId);
+    this.presenceStates.delete(channelId);
+    this.connectionStatus.delete(channelId);
+    this.reconnectAttempts.delete(channelId);
+    this.stopHeartbeat(channelId);
+    
+    console.log(`Cleaned up channel: ${channelId}`);
+  }
+  
+  /**
+   * Schedule reconnection with exponential backoff
+   */
+  private static scheduleReconnection(channelId: string) {
+    const attempts = this.reconnectAttempts.get(channelId) || 0;
+    if (attempts < this.maxReconnectAttempts) {
+      const delay = this.reconnectDelay * Math.pow(2, attempts);
+      console.log(`Scheduling reconnection ${attempts + 1}/${this.maxReconnectAttempts} for channel ${channelId} in ${delay}ms`);
+      
+      setTimeout(() => {
+        this.reconnectAttempts.set(channelId, attempts + 1);
+        this.reconnectChannel(channelId);
+      }, delay);
+    } else {
+      console.error(`Max reconnection attempts reached for channel ${channelId}`);
+      this.connectionStatus.set(channelId, 'disconnected');
+    }
+  }
+  
+  /**
+   * Reconnect a channel using existing callbacks
+   */
+  private static reconnectChannel(channelId: string) {
+    const channelData = this.activeChannels.get(channelId);
+    if (!channelData) return;
+    
+    console.log(`Reconnecting channel: ${channelId}`);
+    
+    // Get all existing callbacks
+    const callbackMap = this.callbackRegistry.get(channelId);
+    if (!callbackMap || callbackMap.size === 0) {
+      this.cleanupChannel(channelId);
+      return;
+    }
+    
+    // Cleanup current channel
+    try {
+      channelData.channel.unsubscribe();
+    } catch (error) {
+      console.warn(`Error during reconnection cleanup for ${channelId}:`, error);
+    }
+    
+    // Create new subscription with merged callbacks
+    const mergedCallbacks: any = {};
+    for (const callbacks of callbackMap.values()) {
+      Object.keys(callbacks).forEach(key => {
+        if (!mergedCallbacks[key]) {
+          mergedCallbacks[key] = (data: any) => {
+            // Broadcast to all callbacks of this type
+            for (const cb of callbackMap.values()) {
+              if (cb[key]) cb[key](data);
+            }
+          };
+        }
+      });
+    }
+    
+    // Recreate subscription
+    setTimeout(() => {
+      this.subscribeToChannelMessages(channelId, mergedCallbacks);
+    }, 1000);
+  }
+  
+  /**
+   * Start heartbeat for connection monitoring
+   */
+  private static startHeartbeat(channelId: string) {
+    this.stopHeartbeat(channelId); // Clear any existing heartbeat
+    
+    const interval = setInterval(() => {
+      const channelData = this.activeChannels.get(channelId);
+      if (!channelData) {
+        clearInterval(interval);
+        return;
+      }
+      
+      const now = Date.now();
+      this.lastHeartbeat.set(channelId, now);
+      
+      // Check if channel is still responsive
+      const timeSinceActivity = now - channelData.lastActivity;
+      if (timeSinceActivity > 30000) { // 30 seconds of inactivity
+        console.warn(`Channel ${channelId} appears inactive, checking connection...`);
+        const status = this.getConnectionStatus(channelId);
+        if (status === 'connected') {
+          // Force presence sync to test connection
+          try {
+            const presenceState = channelData.channel.presenceState();
+            this.presenceStates.set(channelId, presenceState);
+            channelData.lastActivity = now;
+          } catch (error) {
+            console.error(`Heartbeat failed for channel ${channelId}:`, error);
+            this.connectionStatus.set(channelId, 'error');
+          }
+        }
+      }
+    }, 10000); // Every 10 seconds
+    
+    this.heartbeatIntervals.set(channelId, interval);
+  }
+  
+  /**
+   * Stop heartbeat for a channel
+   */
+  private static stopHeartbeat(channelId: string) {
+    const interval = this.heartbeatIntervals.get(channelId);
+    if (interval) {
+      clearInterval(interval);
+      this.heartbeatIntervals.delete(channelId);
+      this.lastHeartbeat.delete(channelId);
+    }
+  }
+  
+  /**
+   * Update heartbeat timestamp
+   */
+  private static updateHeartbeat(channelId: string) {
+    const channelData = this.activeChannels.get(channelId);
+    if (channelData) {
+      channelData.lastActivity = Date.now();
+    }
+  }
+  
   /**
    * Get user's chat channels (moais, buddy chats, coach chats)
    */
@@ -534,27 +758,18 @@ export class ChatService {
     // Cleanup existing subscription if it exists
     this.unsubscribeFromChannel(channelId);
     
-    // Build filter based on channel type
+    // Build filter based on channel type - using simpler filters to avoid subscription issues
     let messageFilter = '';
-    let reactionFilter = '';
-    let readReceiptFilter = '';
     
     if (channelId.startsWith('moai-')) {
       const moaiId = channelId.replace('moai-', '');
       messageFilter = `moai_id=eq.${moaiId}`;
-      // For reactions and read receipts, we need to join with messages
-      reactionFilter = `message_id.in.(SELECT id FROM messages WHERE moai_id='${moaiId}' AND is_buddy_chat=false)`;
-      readReceiptFilter = reactionFilter; // Same logic
     } else if (channelId.startsWith('buddy-')) {
       const buddyChatId = channelId.replace('buddy-', '');
       messageFilter = `is_buddy_chat=eq.true`; // We'll refine this with buddy chat details
-      reactionFilter = `message_id.in.(SELECT id FROM messages WHERE is_buddy_chat=true)`;
-      readReceiptFilter = reactionFilter;
     } else if (channelId.startsWith('coach-')) {
       const coachChatId = channelId.replace('coach-', '');
       messageFilter = `moai_coaching_chat_id=eq.${coachChatId}`;
-      reactionFilter = `message_id.in.(SELECT id FROM messages WHERE moai_coaching_chat_id='${coachChatId}')`;
-      readReceiptFilter = reactionFilter;
     }
 
     const channel = supabase
@@ -605,7 +820,7 @@ export class ChatService {
           }
         }
       )
-      // Subscribe to message reactions
+      // Subscribe to message reactions (simplified - no complex filters)
       .on(
         'postgres_changes',
         {
@@ -637,7 +852,7 @@ export class ChatService {
           }
         }
       )
-      // Subscribe to read receipts
+      // Subscribe to read receipts (simplified - no complex filters)
       .on(
         'postgres_changes',
         {
@@ -700,8 +915,12 @@ export class ChatService {
         }
       })
       .subscribe(async (status) => {
+        console.log(`Subscription status for ${channelId}:`, status);
+        
         if (status === 'SUBSCRIBED') {
           console.log(`Successfully subscribed to channel: ${channelId}`);
+          this.connectionStatus.set(channelId, 'connected');
+          this.reconnectAttempts.set(channelId, 0); // Reset reconnect attempts on successful connection
           
           // Track user presence in this channel
           const { data: user } = await supabase.auth.getUser();
@@ -722,7 +941,26 @@ export class ChatService {
           }
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           console.error(`Channel subscription error for ${channelId}:`, status);
+          this.connectionStatus.set(channelId, 'error');
+          
           callbacks.onError?.(status);
+          
+          // Implement exponential backoff reconnection
+          const attempts = this.reconnectAttempts.get(channelId) || 0;
+          if (attempts < this.maxReconnectAttempts) {
+            const delay = this.reconnectDelay * Math.pow(2, attempts);
+            console.log(`Attempting reconnection ${attempts + 1}/${this.maxReconnectAttempts} for channel ${channelId} in ${delay}ms`);
+            
+            setTimeout(() => {
+              this.reconnectAttempts.set(channelId, attempts + 1);
+              this.reconnectChannel(channelId, callbacks);
+            }, delay);
+          } else {
+            console.error(`Max reconnection attempts reached for channel ${channelId}`);
+            this.connectionStatus.set(channelId, 'disconnected');
+          }
+        } else {
+          this.connectionStatus.set(channelId, 'connecting');
         }
       });
 
@@ -733,14 +971,40 @@ export class ChatService {
   }
   
   /**
+   * Reconnect to a channel with the same callbacks
+   */
+  private static reconnectChannel(channelId: string, callbacks: any) {
+    console.log(`Reconnecting to channel: ${channelId}`);
+    this.unsubscribeFromChannel(channelId);
+    
+    // Wait a moment before reconnecting
+    setTimeout(() => {
+      this.subscribeToChannelMessages(channelId, callbacks);
+    }, 500);
+  }
+  
+  /**
+   * Get connection status for a channel
+   */
+  static getConnectionStatus(channelId: string): 'connecting' | 'connected' | 'disconnected' | 'error' {
+    return this.connectionStatus.get(channelId) || 'disconnected';
+  }
+  
+  /**
    * Unsubscribe from a channel
    */
   static unsubscribeFromChannel(channelId: string) {
     const subscription = this.activeSubscriptions.get(channelId);
     if (subscription) {
-      subscription.unsubscribe();
+      try {
+        subscription.unsubscribe();
+      } catch (error) {
+        console.warn(`Error unsubscribing from channel ${channelId}:`, error);
+      }
       this.activeSubscriptions.delete(channelId);
       this.presenceStates.delete(channelId);
+      this.connectionStatus.delete(channelId);
+      this.reconnectAttempts.delete(channelId);
       console.log(`Unsubscribed from channel: ${channelId}`);
     }
   }
@@ -750,10 +1014,16 @@ export class ChatService {
    */
   static unsubscribeFromAllChannels() {
     for (const [channelId, subscription] of this.activeSubscriptions.entries()) {
-      subscription.unsubscribe();
+      try {
+        subscription.unsubscribe();
+      } catch (error) {
+        console.warn(`Error unsubscribing from channel ${channelId}:`, error);
+      }
     }
     this.activeSubscriptions.clear();
     this.presenceStates.clear();
+    this.connectionStatus.clear();
+    this.reconnectAttempts.clear();
     console.log('Unsubscribed from all channels');
   }
   

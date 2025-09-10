@@ -8,6 +8,7 @@ export * from './onboarding-service';
 export * from './badge-service';
 export * from './notification-service';
 export * from './chat-service';
+export * from './weekly-plan-service';
 
 // You can add more service exports here as you create them:
 // export * from './message-service';
